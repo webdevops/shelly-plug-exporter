@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
@@ -218,78 +219,84 @@ func shellyProbe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if targetList, err := paramsGetListRequired(r.URL.Query(), "target"); err == nil {
+		wg := sync.WaitGroup{}
 
 		for _, target := range targetList {
-			target = strings.TrimRight(target, "/")
-			targetLogger := contextLogger.WithField("target", target)
+			wg.Add(1)
+			go func(target string) {
+				defer wg.Done()
+				target = strings.TrimRight(target, "/")
+				targetLogger := contextLogger.WithField("target", target)
 
-			targetLabels := prometheus.Labels{
-				"target":   target,
-				"mac":      "",
-				"plugName": "",
-			}
-
-			infoLabels := prometheus.Labels{
-				"target":     target,
-				"mac":        "",
-				"hostname":   "",
-				"plugName":   "",
-				"plugType":   "",
-				"plugSerial": "",
-			}
-
-			sp := shellyplug.New(target, client)
-			if result, err := sp.GetSettings(); err == nil {
-				targetLabels["plugName"] = result.Name
-				targetLabels["mac"] = result.Device.Mac
-
-				infoLabels["plugName"] = result.Name
-				infoLabels["mac"] = result.Name
-				infoLabels["hostname"] = result.Device.Hostname
-				infoLabels["plugType"] = result.Device.Type
-
-				metricPowerLimit.With(targetLabels).Set(result.MaxPower)
-			} else {
-				targetLogger.Errorf(`failed to fetch settings: %v`, err)
-			}
-
-			if result, err := sp.GetStatus(); err == nil {
-				infoLabels["plugSerial"] = fmt.Sprintf("%d", result.Serial)
-				metricInfo.With(infoLabels).Set(1)
-
-				metricSysUnixtime.With(targetLabels).Set(float64(result.Unixtime))
-				metricSysUptime.With(targetLabels).Set(float64(result.Uptime))
-				metricSysMemTotal.With(targetLabels).Set(float64(result.RAMTotal))
-				metricSysMemFree.With(targetLabels).Set(float64(result.RAMFree))
-				metricSysFsSize.With(targetLabels).Set(float64(result.FsSize))
-				metricSysFsFree.With(targetLabels).Set(float64(result.FsFree))
-
-				metricTemp.With(targetLabels).Set(result.Temperature)
-				metricOverTemp.With(targetLabels).Set(boolToFloat64(result.Overtemperature))
-
-				wifiLabels := prometheus.Labels{
+				targetLabels := prometheus.Labels{
 					"target":   target,
-					"mac":      result.Mac,
-					"plugName": targetLabels["plugName"],
-					"ssid":     result.WifiSta.Ssid,
-				}
-				metricWifiRssi.With(wifiLabels).Set(float64(result.WifiSta.Rssi))
-
-				metricUpdateNeeded.With(targetLabels).Set(boolToFloat64(result.HasUpdate))
-				metricCloudEnabled.With(targetLabels).Set(boolToFloat64(result.Cloud.Enabled))
-				metricCloudConnected.With(targetLabels).Set(boolToFloat64(result.Cloud.Connected))
-
-				if len(result.Meters) >= 1 {
-					powerUsage := result.Meters[0]
-					metricPowerCurrent.With(targetLabels).Set(powerUsage.Power)
-					metricPowerTotal.With(targetLabels).Set(powerUsage.Total)
+					"mac":      "",
+					"plugName": "",
 				}
 
-			} else {
-				targetLogger.Errorf(`failed to fetch status: %v`, err)
-			}
+				infoLabels := prometheus.Labels{
+					"target":     target,
+					"mac":        "",
+					"hostname":   "",
+					"plugName":   "",
+					"plugType":   "",
+					"plugSerial": "",
+				}
 
+				sp := shellyplug.New(target, client)
+				if result, err := sp.GetSettings(); err == nil {
+					targetLabels["plugName"] = result.Name
+					targetLabels["mac"] = result.Device.Mac
+
+					infoLabels["plugName"] = result.Name
+					infoLabels["mac"] = result.Name
+					infoLabels["hostname"] = result.Device.Hostname
+					infoLabels["plugType"] = result.Device.Type
+
+					metricPowerLimit.With(targetLabels).Set(result.MaxPower)
+				} else {
+					targetLogger.Errorf(`failed to fetch settings: %v`, err)
+				}
+
+				if result, err := sp.GetStatus(); err == nil {
+					infoLabels["plugSerial"] = fmt.Sprintf("%d", result.Serial)
+					metricInfo.With(infoLabels).Set(1)
+
+					metricSysUnixtime.With(targetLabels).Set(float64(result.Unixtime))
+					metricSysUptime.With(targetLabels).Set(float64(result.Uptime))
+					metricSysMemTotal.With(targetLabels).Set(float64(result.RAMTotal))
+					metricSysMemFree.With(targetLabels).Set(float64(result.RAMFree))
+					metricSysFsSize.With(targetLabels).Set(float64(result.FsSize))
+					metricSysFsFree.With(targetLabels).Set(float64(result.FsFree))
+
+					metricTemp.With(targetLabels).Set(result.Temperature)
+					metricOverTemp.With(targetLabels).Set(boolToFloat64(result.Overtemperature))
+
+					wifiLabels := prometheus.Labels{
+						"target":   target,
+						"mac":      result.Mac,
+						"plugName": targetLabels["plugName"],
+						"ssid":     result.WifiSta.Ssid,
+					}
+					metricWifiRssi.With(wifiLabels).Set(float64(result.WifiSta.Rssi))
+
+					metricUpdateNeeded.With(targetLabels).Set(boolToFloat64(result.HasUpdate))
+					metricCloudEnabled.With(targetLabels).Set(boolToFloat64(result.Cloud.Enabled))
+					metricCloudConnected.With(targetLabels).Set(boolToFloat64(result.Cloud.Connected))
+
+					if len(result.Meters) >= 1 {
+						powerUsage := result.Meters[0]
+						metricPowerCurrent.With(targetLabels).Set(powerUsage.Power)
+						metricPowerTotal.With(targetLabels).Set(powerUsage.Total)
+					}
+
+				} else {
+					targetLogger.Errorf(`failed to fetch status: %v`, err)
+				}
+			}(target)
 		}
+
+		wg.Wait()
 	}
 
 	h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})

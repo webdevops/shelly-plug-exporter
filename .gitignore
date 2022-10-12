@@ -1,0 +1,4 @@
+/vendor/
+/shelly-plug-exporter
+/*.exe
+/release-assets

@@ -18,6 +18,8 @@ Application Options:
       --debug                 debug mode [$DEBUG]
   -v, --verbose               verbose mode [$VERBOSE]
       --log.json              Switch log output to json format [$LOG_JSON]
+      --shelly.auth.username= Username for shelly plug login [$SHELLY_AUTH_USERNAME]
+      --shelly.auth.password= Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
       --server.bind=          Server address (default: :8080) [$SERVER_BIND]
       --server.timeout.read=  Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
       --server.timeout.write= Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]

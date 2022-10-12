@@ -16,6 +16,13 @@ type (
 			LogJson bool `           long:"log.json"     env:"LOG_JSON" description:"Switch log output to json format"`
 		}
 
+		Shelly struct {
+			Auth struct {
+				Username string `long:"shelly.auth.username"  env:"SHELLY_AUTH_USERNAME"  description:"Username for shelly plug login"`
+				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login"`
+			}
+		}
+
 		// general options
 		Server struct {
 			// general options

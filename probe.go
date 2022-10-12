@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -199,6 +200,22 @@ func shellyProbe(w http.ResponseWriter, r *http.Request) {
 
 	client := resty.New()
 	client.SetHeader("User-Agent", UserAgent+gitTag)
+	client.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
+		if response.StatusCode() == 401 {
+			return errors.New(`shelly plug requires authentication and/or credentials are invalid`)
+		}
+
+		if response.StatusCode() != 200 {
+			return fmt.Errorf(`expected http status 200, got %v`, response.StatusCode())
+		}
+
+		return nil
+	})
+
+	if len(opts.Shelly.Auth.Username) >= 1 {
+		client.SetDisableWarn(true)
+		client.SetBasicAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
+	}
 
 	if targetList, err := paramsGetListRequired(r.URL.Query(), "target"); err == nil {
 
@@ -232,6 +249,8 @@ func shellyProbe(w http.ResponseWriter, r *http.Request) {
 				infoLabels["plugType"] = result.Device.Type
 
 				metricPowerLimit.With(targetLabels).Set(result.MaxPower)
+			} else {
+				targetLogger.Errorf(`failed to fetch settings: %v`, err)
 			}
 
 			if result, err := sp.GetStatus(); err == nil {

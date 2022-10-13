@@ -38,7 +38,7 @@ HTTP Endpoints
 |--------------------|--------------------------------------------------------------------------------------------------------------------------|
 | `/metrics`         | Default prometheus golang metrics                                                                                        |
 | `/probe`           | Probe shelly plugs (with `?target=xxx.xxx.xxx.xxx` endpoints, can probe multiple endpoints eg `?target=xxx&target=yyyy`) |
-| `/probe/discovery` | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs                                                      |
+| `/probe/discovery` | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs (must be run on host network)                        |
 
 Metrics
 -------

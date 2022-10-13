@@ -1,4 +1,4 @@
-package main
+package shellyplug
 
 func boolToFloat64(v bool) float64 {
 	if v {

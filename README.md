@@ -6,6 +6,7 @@ Shelly plug exporter
 [![Quay.io](https://img.shields.io/badge/Quay.io-webdevops%2Fshelly--plug--exporter-blue)](https://quay.io/repository/webdevops/shelly-plug-exporter)
 
 Prometheus exporter for Shelly Plugs
+Can probe list of targets or use mDNS service discovery
 
 Usage
 -----
@@ -15,26 +16,29 @@ Usage:
   shelly-plug-exporter [OPTIONS]
 
 Application Options:
-      --debug                 debug mode [$DEBUG]
-  -v, --verbose               verbose mode [$VERBOSE]
-      --log.json              Switch log output to json format [$LOG_JSON]
-      --shelly.auth.username= Username for shelly plug login [$SHELLY_AUTH_USERNAME]
-      --shelly.auth.password= Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
-      --server.bind=          Server address (default: :8080) [$SERVER_BIND]
-      --server.timeout.read=  Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
-      --server.timeout.write= Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
+      --debug                              debug mode [$DEBUG]
+  -v, --verbose                            verbose mode [$VERBOSE]
+      --log.json                           Switch log output to json format [$LOG_JSON]
+      --shelly.auth.username=              Username for shelly plug login [$SHELLY_AUTH_USERNAME]
+      --shelly.auth.password=              Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
+      --shelly.servicediscovery.timeout=   mDNS discovery response timeout (default: 5s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
+      --shelly.servicediscovery.cache.ttl= mDNS discovery cache ttl (default: 15m) [$SHELLY_SERVICEDISCOVERY_CACHE_TTL]
+      --server.bind=                       Server address (default: :8080) [$SERVER_BIND]
+      --server.timeout.read=               Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
+      --server.timeout.write=              Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
 
 Help Options:
-  -h, --help                  Show this help message
+  -h, --help                               Show this help message
 ```
 
 HTTP Endpoints
 --------------
 
-| Endpoint   | Description                                                                                 |
-|------------|---------------------------------------------------------------------------------------------|
-| `/metrics` | Default prometheus golang metrics                                                           |
-| `/probe`   | Probe shelly plugs (with `?target=xxx.xxx.xxx.xxx` endpoints, can probe multiple endpoints) |
+| Endpoint           | Description                                                                                                              |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `/metrics`         | Default prometheus golang metrics                                                                                        |
+| `/probe`           | Probe shelly plugs (with `?target=xxx.xxx.xxx.xxx` endpoints, can probe multiple endpoints eg `?target=xxx&target=yyyy`) |
+| `/probe/discovery` | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs                                                      |
 
 Metrics
 -------

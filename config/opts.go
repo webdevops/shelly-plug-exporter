@@ -21,6 +21,14 @@ type (
 				Username string `long:"shelly.auth.username"  env:"SHELLY_AUTH_USERNAME"  description:"Username for shelly plug login"`
 				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login"`
 			}
+
+			ServiceDiscovery struct {
+				Timeout time.Duration `long:"shelly.servicediscovery.timeout"  env:"SHELLY_SERVICEDISCOVERY_TIMEOUT"  description:"mDNS discovery response timeout" default:"5s"`
+
+				Cache struct {
+					Ttl time.Duration `long:"shelly.servicediscovery.cache.ttl"  env:"SHELLY_SERVICEDISCOVERY_CACHE_TTL"  description:"mDNS discovery cache ttl" default:"15m"`
+				}
+			}
 		}
 
 		// general options

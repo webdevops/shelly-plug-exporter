@@ -129,7 +129,7 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 		targetLabels["mac"] = result.Device.Mac
 
 		infoLabels["plugName"] = result.Name
-		infoLabels["mac"] = result.Name
+		infoLabels["mac"] = result.Device.Mac
 		infoLabels["hostname"] = result.Device.Hostname
 		infoLabels["plugType"] = result.Device.Type
 
@@ -154,7 +154,7 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 
 		wifiLabels := prometheus.Labels{
 			"target":   target,
-			"mac":      result.Mac,
+			"mac":      targetLabels["mac"],
 			"plugName": targetLabels["plugName"],
 			"ssid":     result.WifiSta.Ssid,
 		}

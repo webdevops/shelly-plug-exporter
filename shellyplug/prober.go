@@ -1,6 +1,7 @@
 package shellyplug
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -12,6 +13,7 @@ import (
 
 type (
 	ShellyPlug struct {
+		ctx      context.Context
 		client   *resty.Client
 		logger   *log.Entry
 		registry *prometheus.Registry
@@ -45,8 +47,9 @@ type (
 	}
 )
 
-func New(registry *prometheus.Registry, logger *log.Entry) *ShellyPlug {
+func New(ctx context.Context, registry *prometheus.Registry, logger *log.Entry) *ShellyPlug {
 	sp := ShellyPlug{}
+	sp.ctx = ctx
 	sp.registry = registry
 	sp.logger = logger
 	sp.initResty()
@@ -181,7 +184,7 @@ func (sp *ShellyPlug) targetGetSettings(target string) (ResultSettings, error) {
 
 	result := ResultSettings{}
 
-	r := sp.client.R().SetResult(&result).ForceContentType("application/json")
+	r := sp.client.R().SetContext(sp.ctx).SetResult(&result).ForceContentType("application/json")
 	_, err := r.Get(url)
 	return result, err
 }
@@ -191,7 +194,7 @@ func (sp *ShellyPlug) targetGetStatus(target string) (ResultStatus, error) {
 
 	result := ResultStatus{}
 
-	r := sp.client.R().SetResult(&result).ForceContentType("application/json")
+	r := sp.client.R().SetContext(sp.ctx).SetResult(&result).ForceContentType("application/json")
 	_, err := r.Get(url)
 	return result, err
 }

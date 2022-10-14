@@ -40,7 +40,7 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	sp := shellyplug.New(registry, contextLogger)
+	sp := shellyplug.New(ctx, registry, contextLogger)
 	sp.SetUserAgent(UserAgent + gitTag)
 	if len(opts.Shelly.Auth.Username) >= 1 {
 		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
@@ -73,7 +73,7 @@ func shellyProbeTargets(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	sp := shellyplug.New(registry, contextLogger)
+	sp := shellyplug.New(ctx, registry, contextLogger)
 	sp.SetUserAgent(UserAgent + gitTag)
 	if len(opts.Shelly.Auth.Username) >= 1 {
 		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)

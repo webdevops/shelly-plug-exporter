@@ -19,7 +19,7 @@ var (
 )
 
 func EnableServiceDiscoveryCache(ttl time.Duration) {
-	sdCache = cache.New(1*time.Minute, ttl)
+	sdCache = cache.New(ttl, 1*time.Minute)
 }
 
 func (sp *ShellyPlug) UseDiscovery(ttl time.Duration) {

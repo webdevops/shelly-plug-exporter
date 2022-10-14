@@ -51,7 +51,7 @@ Metrics
 | `shellyplug_overtemperature`     | Status if temperature reached limit    |
 | `shellyplug_temperature`         | Device temperature                     |
 | `shellyplug_power_current`       | Current power usage                    |
-| `shellyplug_power_total`         | Total power usage                      |
+| `shellyplug_power_total`         | Total power usage in watt/hours        |
 | `shellyplug_power_limit`         | Configured power limit                 |
 | `shellyplug_system_fs_free`      | System filesystem free space           |
 | `shellyplug_system_fs_size`      | System filesystem size                 |

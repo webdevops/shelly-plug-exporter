@@ -167,7 +167,8 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 		if len(result.Meters) >= 1 {
 			powerUsage := result.Meters[0]
 			sp.prometheus.powerCurrent.With(targetLabels).Set(powerUsage.Power)
-			sp.prometheus.powerTotal.With(targetLabels).Set(powerUsage.Total)
+			// total is provided as watt/minutes, we want watt/hours
+			sp.prometheus.powerTotal.With(targetLabels).Set(powerUsage.Total / 60)
 		}
 
 	} else {

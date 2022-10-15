@@ -32,6 +32,51 @@ Help Options:
   -h, --help                             Show this help message
 ```
 
+Docker & Prometheus
+-------------------
+
+For mDNS service discovery the docker container must run on host network for multicast requests so the exporter needs
+to be exposed on the host machine.
+
+docker-compose.yaml
+```yaml
+version: '3.4'
+services:
+    # ...
+    shelly-plug:
+        image: webdevops/shelly-plug-exporter:$VERSION
+        restart: always
+        network_mode: host
+        read_only: true
+        environment:
+            - VERBOSE=1
+            - SERVER_BIND=:8089
+            - SHELLY_SERVICEDISCOVERY_TIMEOUT=10s
+    # ...
+```
+
+prometheus config:
+```yaml
+# ...
+scrape_configs:
+    # ...
+
+    # general exporter metrics (eg memory & golang metrics)
+    - job_name: 'shelly-plug-exporter'
+      static_configs:
+          - targets: ['host-addr:8089']
+
+    # plugs metrics (mDNS servicediscovery)
+    - job_name: 'shelly-plug-discovery'
+      scrape_interval: 30s
+      scrape_timeout: 29s
+      static_configs:
+          - targets: ['host-addr:8089']
+      metrics_path: /probe/discovery
+
+    # ...
+```
+
 HTTP Endpoints
 --------------
 

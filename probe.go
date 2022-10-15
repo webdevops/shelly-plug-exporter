@@ -46,7 +46,7 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
 	}
 
-	sp.UseDiscovery(opts.Shelly.ServiceDiscovery.Timeout)
+	sp.UseDiscovery()
 	sp.Run()
 
 	h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})

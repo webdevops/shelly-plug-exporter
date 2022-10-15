@@ -16,19 +16,19 @@ Usage:
   shelly-plug-exporter [OPTIONS]
 
 Application Options:
-      --debug                              debug mode [$DEBUG]
-  -v, --verbose                            verbose mode [$VERBOSE]
-      --log.json                           Switch log output to json format [$LOG_JSON]
-      --shelly.auth.username=              Username for shelly plug login [$SHELLY_AUTH_USERNAME]
-      --shelly.auth.password=              Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
-      --shelly.servicediscovery.timeout=   mDNS discovery response timeout (default: 5s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
-      --shelly.servicediscovery.cache.ttl= mDNS discovery cache ttl (default: 15m) [$SHELLY_SERVICEDISCOVERY_CACHE_TTL]
-      --server.bind=                       Server address (default: :8080) [$SERVER_BIND]
-      --server.timeout.read=               Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
-      --server.timeout.write=              Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
+      --debug                            debug mode [$DEBUG]
+  -v, --verbose                          verbose mode [$VERBOSE]
+      --log.json                         Switch log output to json format [$LOG_JSON]
+      --shelly.auth.username=            Username for shelly plug login [$SHELLY_AUTH_USERNAME]
+      --shelly.auth.password=            Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
+      --shelly.servicediscovery.timeout= mDNS discovery response timeout (default: 5s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
+      --shelly.servicediscovery.refresh= mDNS discovery refresh time (default: 15m) [$SHELLY_SERVICEDISCOVERY_REFRESH]
+      --server.bind=                     Server address (default: :8080) [$SERVER_BIND]
+      --server.timeout.read=             Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
+      --server.timeout.write=            Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
 
 Help Options:
-  -h, --help                               Show this help message
+  -h, --help                             Show this help message
 ```
 
 HTTP Endpoints

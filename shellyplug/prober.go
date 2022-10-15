@@ -128,6 +128,10 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 	}
 
 	if result, err := sp.targetGetSettings(target); err == nil {
+		if discovery != nil {
+			discovery.MarkTarget(target, DiscoveryTargetHealthy)
+		}
+
 		targetLabels["plugName"] = result.Name
 		targetLabels["mac"] = result.Device.Mac
 
@@ -139,6 +143,9 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 		sp.prometheus.powerLimit.With(targetLabels).Set(result.MaxPower)
 	} else {
 		targetLogger.Errorf(`failed to fetch settings: %v`, err)
+		if discovery != nil {
+			discovery.MarkTarget(target, DiscoveryTargetUnhealthy)
+		}
 	}
 
 	if result, err := sp.targetGetStatus(target); err == nil {
@@ -176,6 +183,9 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 
 	} else {
 		targetLogger.Errorf(`failed to fetch status: %v`, err)
+		if discovery != nil {
+			discovery.MarkTarget(target, DiscoveryTargetUnhealthy)
+		}
 	}
 }
 

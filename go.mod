@@ -12,7 +12,6 @@ require (
 require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/hashicorp/mdns v1.0.5
-	github.com/patrickmn/go-cache v2.1.0+incompatible
 )
 
 require (

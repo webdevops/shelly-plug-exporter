@@ -108,7 +108,11 @@ func startHttpServer() {
 		}
 	})
 
-	shellyplug.EnableServiceDiscoveryCache(opts.Shelly.ServiceDiscovery.Cache.Ttl)
+	shellyplug.EnableDiscovery(
+		log.WithField("module", "discovery"),
+		opts.Shelly.ServiceDiscovery.Refresh,
+		opts.Shelly.ServiceDiscovery.Timeout,
+	)
 
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/probe", shellyProbeTargets)

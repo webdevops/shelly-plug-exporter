@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -170,40 +171,33 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 		sp.prometheus.temp.With(targetLabels).Set(result.Temperature)
 		sp.prometheus.overTemp.With(targetLabels).Set(boolToFloat64(result.Overtemperature))
 
-		wifiLabels := prometheus.Labels{
-			"target":   target,
-			"mac":      targetLabels["mac"],
-			"plugName": targetLabels["plugName"],
-			"ssid":     result.WifiSta.Ssid,
-		}
+		wifiLabels := copyLabelMap(targetLabels)
+		wifiLabels["ssid"] = result.WifiSta.Ssid
 		sp.prometheus.wifiRssi.With(wifiLabels).Set(float64(result.WifiSta.Rssi))
 
 		sp.prometheus.updateNeeded.With(targetLabels).Set(boolToFloat64(result.HasUpdate))
 		sp.prometheus.cloudEnabled.With(targetLabels).Set(boolToFloat64(result.Cloud.Enabled))
 		sp.prometheus.cloudConnected.With(targetLabels).Set(boolToFloat64(result.Cloud.Connected))
 
-		if len(result.Meters) >= 1 {
-			powerUsage := result.Meters[0]
-			sp.prometheus.powerCurrent.With(targetLabels).Set(powerUsage.Power)
+		for unit, powerUsage := range result.Meters {
+			powerUsageLabels := copyLabelMap(targetLabels)
+			powerUsageLabels["unit"] = strconv.Itoa(unit)
+			sp.prometheus.powerCurrent.With(powerUsageLabels).Set(powerUsage.Power)
 			// total is provided as watt/minutes, we want watt/hours
-			sp.prometheus.powerTotal.With(targetLabels).Set(powerUsage.Total / 60)
+			sp.prometheus.powerTotal.With(powerUsageLabels).Set(powerUsage.Total / 60)
 		}
 
-		if len(result.Relays) >= 1 {
-			relay := result.Relays[0]
+		for unit, relay := range result.Relays {
+			switchLabels := copyLabelMap(targetLabels)
+			switchLabels["unit"] = strconv.Itoa(unit)
 
-			switchLabels := prometheus.Labels{
-				"target":       targetLabels["target"],
-				"mac":          targetLabels["mac"],
-				"plugName":     targetLabels["plugName"],
-				"switchSource": relay.Source,
-			}
+			switchOnLabels := copyLabelMap(switchLabels)
+			switchOnLabels["switchSource"] = relay.Source
 
-			sp.prometheus.switchOn.With(switchLabels).Set(boolToFloat64(relay.Ison))
-			sp.prometheus.switchOverpower.With(targetLabels).Set(boolToFloat64(relay.Overpower))
-			sp.prometheus.switchTimer.With(targetLabels).Set(boolToFloat64(relay.HasTimer))
+			sp.prometheus.switchOn.With(switchOnLabels).Set(boolToFloat64(relay.Ison))
+			sp.prometheus.switchOverpower.With(switchLabels).Set(boolToFloat64(relay.Overpower))
+			sp.prometheus.switchTimer.With(switchLabels).Set(boolToFloat64(relay.HasTimer))
 		}
-
 	} else {
 		targetLogger.Errorf(`failed to fetch status: %v`, err)
 		if discovery != nil {

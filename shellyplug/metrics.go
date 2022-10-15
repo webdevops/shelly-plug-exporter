@@ -5,6 +5,13 @@ import (
 )
 
 func (sp *ShellyPlug) initMetrics() {
+	commonLabels := []string{"target", "mac", "plugName"}
+	switchLabels := append(commonLabels, "unit")
+	powerLabels := append(commonLabels, "unit")
+
+	// ##########################################
+	// Info
+
 	sp.prometheus.info = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_info",
@@ -21,12 +28,15 @@ func (sp *ShellyPlug) initMetrics() {
 	)
 	sp.registry.MustRegister(sp.prometheus.info)
 
+	// ##########################################
+	// Temp
+
 	sp.prometheus.temp = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_temperature",
 			Help: "ShellyPlug temperature",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.temp)
 
@@ -35,39 +45,43 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_overtemperature",
 			Help: "ShellyPlug over temperature",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.overTemp)
+
+	// ##########################################
+	// Wifi
 
 	sp.prometheus.wifiRssi = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_wifi_rssi",
 			Help: "ShellyPlug wifi rssi",
 		},
-		[]string{
-			"target",
-			"mac",
-			"plugName",
-			"ssid",
-		},
+		[]string{"target", "mac", "plugName", "ssid"},
 	)
 	sp.registry.MustRegister(sp.prometheus.wifiRssi)
+
+	// ##########################################
+	// Update
 
 	sp.prometheus.updateNeeded = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_update_needed",
 			Help: "ShellyPlug status is update is needed",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.updateNeeded)
+
+	// ##########################################
+	// Cloud
 
 	sp.prometheus.cloudEnabled = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_cloud_enabled",
 			Help: "ShellyPlug status if cloud is enabled",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.cloudEnabled)
 
@@ -76,16 +90,19 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_cloud_connected",
 			Help: "ShellyPlug status if device is connected to cloud",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.cloudConnected)
+
+	// ##########################################
+	// Switch
 
 	sp.prometheus.switchOn = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_switch_on",
 			Help: "ShellyPlug switch on status",
 		},
-		[]string{"target", "mac", "plugName", "switchSource"},
+		append(switchLabels, "switchSource"),
 	)
 	sp.registry.MustRegister(sp.prometheus.switchOn)
 
@@ -94,7 +111,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_switch_overpower",
 			Help: "ShellyPlug switch overpower status",
 		},
-		[]string{"target", "mac", "plugName"},
+		switchLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.switchOverpower)
 
@@ -103,16 +120,19 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_switch_timer",
 			Help: "ShellyPlug status if time is active",
 		},
-		[]string{"target", "mac", "plugName"},
+		switchLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.switchTimer)
+
+	// ##########################################
+	// Power
 
 	sp.prometheus.powerCurrent = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_power_current",
 			Help: "ShellyPlug current power usage in watts",
 		},
-		[]string{"target", "mac", "plugName"},
+		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerCurrent)
 
@@ -121,7 +141,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_power_total",
 			Help: "ShellyPlug current power total in watts",
 		},
-		[]string{"target", "mac", "plugName"},
+		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerTotal)
 
@@ -130,16 +150,19 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_power_limit",
 			Help: "ShellyPlug configured power limit in watts",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerLimit)
+
+	// ##########################################
+	// System
 
 	sp.prometheus.sysUnixtime = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_system_unixtime",
 			Help: "ShellyPlug system unixtime",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysUnixtime)
 
@@ -148,7 +171,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_system_uptime",
 			Help: "ShellyPlug system uptime",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysUptime)
 
@@ -157,7 +180,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_system_memory_total",
 			Help: "ShellyPlug system memory total",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysMemTotal)
 
@@ -166,7 +189,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_system_memory_free",
 			Help: "ShellyPlug system memory free",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysMemFree)
 
@@ -175,7 +198,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_system_fs_size",
 			Help: "ShellyPlug system filesystem size",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysFsSize)
 
@@ -184,7 +207,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_system_fs_free",
 			Help: "ShellyPlug system filesystem free",
 		},
-		[]string{"target", "mac", "plugName"},
+		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.sysFsFree)
 

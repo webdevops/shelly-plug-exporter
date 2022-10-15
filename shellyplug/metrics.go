@@ -80,6 +80,33 @@ func (sp *ShellyPlug) initMetrics() {
 	)
 	sp.registry.MustRegister(sp.prometheus.cloudConnected)
 
+	sp.prometheus.switchOn = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_switch_on",
+			Help: "ShellyPlug switch on status",
+		},
+		[]string{"target", "mac", "plugName", "switchSource"},
+	)
+	sp.registry.MustRegister(sp.prometheus.switchOn)
+
+	sp.prometheus.switchOverpower = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_switch_overpower",
+			Help: "ShellyPlug switch overpower status",
+		},
+		[]string{"target", "mac", "plugName"},
+	)
+	sp.registry.MustRegister(sp.prometheus.switchOverpower)
+
+	sp.prometheus.switchTimer = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_switch_timer",
+			Help: "ShellyPlug status if time is active",
+		},
+		[]string{"target", "mac", "plugName"},
+	)
+	sp.registry.MustRegister(sp.prometheus.switchTimer)
+
 	sp.prometheus.powerCurrent = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_power_current",

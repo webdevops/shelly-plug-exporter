@@ -34,6 +34,10 @@ type (
 			cloudEnabled   *prometheus.GaugeVec
 			cloudConnected *prometheus.GaugeVec
 
+			switchOn        *prometheus.GaugeVec
+			switchOverpower *prometheus.GaugeVec
+			switchTimer     *prometheus.GaugeVec
+
 			powerCurrent *prometheus.GaugeVec
 			powerTotal   *prometheus.GaugeVec
 			powerLimit   *prometheus.GaugeVec
@@ -183,6 +187,21 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 			sp.prometheus.powerCurrent.With(targetLabels).Set(powerUsage.Power)
 			// total is provided as watt/minutes, we want watt/hours
 			sp.prometheus.powerTotal.With(targetLabels).Set(powerUsage.Total / 60)
+		}
+
+		if len(result.Relays) >= 1 {
+			relay := result.Relays[0]
+
+			switchLabels := prometheus.Labels{
+				"target":       targetLabels["target"],
+				"mac":          targetLabels["mac"],
+				"plugName":     targetLabels["plugName"],
+				"switchSource": relay.Source,
+			}
+
+			sp.prometheus.switchOn.With(switchLabels).Set(boolToFloat64(relay.Ison))
+			sp.prometheus.switchOverpower.With(targetLabels).Set(boolToFloat64(relay.Overpower))
+			sp.prometheus.switchTimer.With(targetLabels).Set(boolToFloat64(relay.HasTimer))
 		}
 
 	} else {

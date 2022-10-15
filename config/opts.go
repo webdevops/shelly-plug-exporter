@@ -17,6 +17,10 @@ type (
 		}
 
 		Shelly struct {
+			Request struct {
+				Timeout time.Duration `long:"shelly.request.timeout"  env:"SHELLY_REQUEST_TIMEOUT"  description:"Request timeout" default:"5s"`
+			}
+
 			Auth struct {
 				Username string `long:"shelly.auth.username"  env:"SHELLY_AUTH_USERNAME"  description:"Username for shelly plug login"`
 				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login"`

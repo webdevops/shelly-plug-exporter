@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/prometheus/client_golang/prometheus"
@@ -71,11 +72,14 @@ func (sp *ShellyPlug) initResty() {
 			return fmt.Errorf(`expected http status 200, got %v`, response.StatusCode())
 		}
 	})
-
 }
 
 func (sp *ShellyPlug) SetUserAgent(val string) {
 	sp.client.SetHeader("User-Agent", val)
+}
+
+func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
+	sp.client.SetTimeout(timeout)
 }
 
 func (sp *ShellyPlug) SetHttpAuth(username, password string) {

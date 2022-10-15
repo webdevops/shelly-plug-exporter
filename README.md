@@ -19,6 +19,7 @@ Application Options:
       --debug                            debug mode [$DEBUG]
   -v, --verbose                          verbose mode [$VERBOSE]
       --log.json                         Switch log output to json format [$LOG_JSON]
+      --shelly.request.timeout=          Request timeout (default: 5s) [$SHELLY_REQUEST_TIMEOUT]
       --shelly.auth.username=            Username for shelly plug login [$SHELLY_AUTH_USERNAME]
       --shelly.auth.password=            Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
       --shelly.servicediscovery.timeout= mDNS discovery response timeout (default: 5s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]

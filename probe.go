@@ -20,6 +20,17 @@ const (
 	DefaultTimeout = 30
 )
 
+func newShellyuProber(ctx context.Context, registry *prometheus.Registry, logger *log.Entry) *shellyplug.ShellyPlug {
+	sp := shellyplug.New(ctx, registry, logger)
+	sp.SetUserAgent(UserAgent + gitTag)
+	sp.SetTimeout(opts.Shelly.Request.Timeout)
+	if len(opts.Shelly.Auth.Username) >= 1 {
+		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
+	}
+
+	return sp
+}
+
 func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var timeoutSeconds float64
@@ -40,12 +51,7 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	sp := shellyplug.New(ctx, registry, contextLogger)
-	sp.SetUserAgent(UserAgent + gitTag)
-	if len(opts.Shelly.Auth.Username) >= 1 {
-		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
-	}
-
+	sp := newShellyuProber(ctx, registry, contextLogger)
 	sp.UseDiscovery()
 	sp.Run()
 
@@ -73,11 +79,7 @@ func shellyProbeTargets(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	sp := shellyplug.New(ctx, registry, contextLogger)
-	sp.SetUserAgent(UserAgent + gitTag)
-	if len(opts.Shelly.Auth.Username) >= 1 {
-		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
-	}
+	sp := newShellyuProber(ctx, registry, contextLogger)
 
 	if targetList, err := paramsGetListRequired(r.URL.Query(), "target"); err == nil {
 		sp.SetTargets(targetList)

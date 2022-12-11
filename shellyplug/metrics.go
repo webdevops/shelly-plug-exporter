@@ -23,7 +23,6 @@ func (sp *ShellyPlug) initMetrics() {
 			"hostname",
 			"plugName",
 			"plugType",
-			"plugSerial",
 		},
 	)
 	sp.registry.MustRegister(sp.prometheus.info)

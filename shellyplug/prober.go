@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-resty/resty/v2"
+	resty "github.com/go-resty/resty/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -128,12 +128,11 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 	}
 
 	infoLabels := prometheus.Labels{
-		"target":     target,
-		"mac":        "",
-		"hostname":   "",
-		"plugName":   "",
-		"plugType":   "",
-		"plugSerial": "",
+		"target":   target,
+		"mac":      "",
+		"hostname": "",
+		"plugName": "",
+		"plugType": "",
 	}
 
 	if result, err := sp.targetGetSettings(target); err == nil {
@@ -158,7 +157,6 @@ func (sp *ShellyPlug) collectFromTarget(target string) {
 	}
 
 	if result, err := sp.targetGetStatus(target); err == nil {
-		infoLabels["plugSerial"] = fmt.Sprintf("%d", result.Serial)
 		sp.prometheus.info.With(infoLabels).Set(1)
 
 		sp.prometheus.sysUnixtime.With(targetLabels).Set(float64(result.Unixtime))

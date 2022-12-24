@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
 
 type (
@@ -21,16 +22,17 @@ type (
 		registry *prometheus.Registry
 
 		targets struct {
-			list []string
+			list []discovery.DiscoveryTarget
 			lock sync.RWMutex
 		}
 
 		prometheus struct {
-			info         *prometheus.GaugeVec
-			temp         *prometheus.GaugeVec
-			overTemp     *prometheus.GaugeVec
-			wifiRssi     *prometheus.GaugeVec
-			updateNeeded *prometheus.GaugeVec
+			info            *prometheus.GaugeVec
+			temp            *prometheus.GaugeVec
+			overTemp        *prometheus.GaugeVec
+			wifiRssi        *prometheus.GaugeVec
+			updateNeeded    *prometheus.GaugeVec
+			restartRequired *prometheus.GaugeVec
 
 			cloudEnabled   *prometheus.GaugeVec
 			cloudConnected *prometheus.GaugeVec
@@ -92,13 +94,13 @@ func (sp *ShellyPlug) SetHttpAuth(username, password string) {
 	sp.client.SetBasicAuth(username, password)
 }
 
-func (sp *ShellyPlug) SetTargets(targets []string) {
+func (sp *ShellyPlug) SetTargets(targets []discovery.DiscoveryTarget) {
 	sp.targets.lock.Lock()
 	defer sp.targets.lock.Unlock()
 	sp.targets.list = targets
 }
 
-func (sp *ShellyPlug) GetTargets() []string {
+func (sp *ShellyPlug) GetTargets() []discovery.DiscoveryTarget {
 	sp.targets.lock.RLock()
 	defer sp.targets.lock.RUnlock()
 
@@ -110,7 +112,7 @@ func (sp *ShellyPlug) Run() {
 
 	for _, target := range sp.GetTargets() {
 		wg.Add(1)
-		go func(target string) {
+		go func(target discovery.DiscoveryTarget) {
 			defer wg.Done()
 			sp.collectFromTarget(target)
 		}(target)
@@ -118,108 +120,55 @@ func (sp *ShellyPlug) Run() {
 	wg.Wait()
 }
 
-func (sp *ShellyPlug) collectFromTarget(target string) {
+func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	targetLogger := sp.logger.WithField("target", target)
 
+	targetLogger.Debugf("probing shelly %v", target.Name())
+
 	targetLabels := prometheus.Labels{
-		"target":   target,
+		"target":   target.Address,
 		"mac":      "",
 		"plugName": "",
 	}
 
 	infoLabels := prometheus.Labels{
-		"target":   target,
+		"target":   target.Address,
 		"mac":      "",
 		"hostname": "",
 		"plugName": "",
 		"plugType": "",
 	}
 
-	if result, err := sp.targetGetSettings(target); err == nil {
-		if discovery != nil {
-			discovery.MarkTarget(target, DiscoveryTargetHealthy)
+	shellyGeneration := 0
+	if result, err := sp.targetGetShellyInfo(target); err == nil {
+		if result.Gen != nil {
+			shellyGeneration = *result.Gen
+		} else {
+			shellyGeneration = 1
 		}
 
 		targetLabels["plugName"] = result.Name
-		targetLabels["mac"] = result.Device.Mac
+		targetLabels["mac"] = result.Mac
 
 		infoLabels["plugName"] = result.Name
-		infoLabels["mac"] = result.Device.Mac
-		infoLabels["hostname"] = result.Device.Hostname
-		infoLabels["plugType"] = result.Device.Type
+		infoLabels["mac"] = result.Mac
+		infoLabels["hostname"] = target.Hostname
 
-		sp.prometheus.powerLimit.With(targetLabels).Set(result.MaxPower)
 	} else {
 		targetLogger.Errorf(`failed to fetch settings: %v`, err)
-		if discovery != nil {
-			discovery.MarkTarget(target, DiscoveryTargetUnhealthy)
+		if discovery.ServiceDiscovery != nil {
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
 		}
 	}
 
-	if result, err := sp.targetGetStatus(target); err == nil {
-		sp.prometheus.info.With(infoLabels).Set(1)
-
-		sp.prometheus.sysUnixtime.With(targetLabels).Set(float64(result.Unixtime))
-		sp.prometheus.sysUptime.With(targetLabels).Set(float64(result.Uptime))
-		sp.prometheus.sysMemTotal.With(targetLabels).Set(float64(result.RAMTotal))
-		sp.prometheus.sysMemFree.With(targetLabels).Set(float64(result.RAMFree))
-		sp.prometheus.sysFsSize.With(targetLabels).Set(float64(result.FsSize))
-		sp.prometheus.sysFsFree.With(targetLabels).Set(float64(result.FsFree))
-
-		sp.prometheus.temp.With(targetLabels).Set(result.Temperature)
-		sp.prometheus.overTemp.With(targetLabels).Set(boolToFloat64(result.Overtemperature))
-
-		wifiLabels := copyLabelMap(targetLabels)
-		wifiLabels["ssid"] = result.WifiSta.Ssid
-		sp.prometheus.wifiRssi.With(wifiLabels).Set(float64(result.WifiSta.Rssi))
-
-		sp.prometheus.updateNeeded.With(targetLabels).Set(boolToFloat64(result.HasUpdate))
-		sp.prometheus.cloudEnabled.With(targetLabels).Set(boolToFloat64(result.Cloud.Enabled))
-		sp.prometheus.cloudConnected.With(targetLabels).Set(boolToFloat64(result.Cloud.Connected))
-
-		for unit, powerUsage := range result.Meters {
-			powerUsageLabels := copyLabelMap(targetLabels)
-			powerUsageLabels["unit"] = strconv.Itoa(unit)
-			sp.prometheus.powerCurrent.With(powerUsageLabels).Set(powerUsage.Power)
-			// total is provided as watt/minutes, we want watt/hours
-			sp.prometheus.powerTotal.With(powerUsageLabels).Set(powerUsage.Total / 60)
-		}
-
-		for unit, relay := range result.Relays {
-			switchLabels := copyLabelMap(targetLabels)
-			switchLabels["unit"] = strconv.Itoa(unit)
-
-			switchOnLabels := copyLabelMap(switchLabels)
-			switchOnLabels["switchSource"] = relay.Source
-
-			sp.prometheus.switchOn.With(switchOnLabels).Set(boolToFloat64(relay.Ison))
-			sp.prometheus.switchOverpower.With(switchLabels).Set(boolToFloat64(relay.Overpower))
-			sp.prometheus.switchTimer.With(switchLabels).Set(boolToFloat64(relay.HasTimer))
-		}
-	} else {
-		targetLogger.Errorf(`failed to fetch status: %v`, err)
-		if discovery != nil {
-			discovery.MarkTarget(target, DiscoveryTargetUnhealthy)
-		}
+	switch shellyGeneration {
+	case 1:
+		sp.collectFromTargetGen1(target, targetLogger, infoLabels, targetLabels)
+	case 2:
+		sp.collectFromTargetGen2(target, targetLogger, infoLabels, targetLabels)
+	default:
+		targetLogger.Warnf("unsupported Shelly generation %v", shellyGeneration)
 	}
-}
 
-func (sp *ShellyPlug) targetGetSettings(target string) (ResultSettings, error) {
-	url := fmt.Sprintf("http://%v/settings", target)
-
-	result := ResultSettings{}
-
-	r := sp.client.R().SetContext(sp.ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(url)
-	return result, err
-}
-
-func (sp *ShellyPlug) targetGetStatus(target string) (ResultStatus, error) {
-	url := fmt.Sprintf("http://%v/status", target)
-
-	result := ResultStatus{}
-
-	r := sp.client.R().SetContext(sp.ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(url)
-	return result, err
+	targetLogger.Infof("shellyGeneration: %v", shellyGeneration)
 }

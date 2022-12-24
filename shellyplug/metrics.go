@@ -6,8 +6,9 @@ import (
 
 func (sp *ShellyPlug) initMetrics() {
 	commonLabels := []string{"target", "mac", "plugName"}
-	switchLabels := append(commonLabels, "unit")
-	powerLabels := append(commonLabels, "unit")
+	tempLabels := append(commonLabels, "sensorID", "sensorName")
+	switchLabels := append(commonLabels, "switchID", "switchName")
+	powerLabels := append(commonLabels, "switchID", "switchName")
 
 	// ##########################################
 	// Info
@@ -35,7 +36,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_temperature",
 			Help: "ShellyPlug temperature",
 		},
-		commonLabels,
+		tempLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.temp)
 
@@ -44,7 +45,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_overtemperature",
 			Help: "ShellyPlug over temperature",
 		},
-		commonLabels,
+		tempLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.overTemp)
 
@@ -71,6 +72,15 @@ func (sp *ShellyPlug) initMetrics() {
 		commonLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.updateNeeded)
+
+	sp.prometheus.restartRequired = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_restart_required",
+			Help: "ShellyPlug if restart is required",
+		},
+		commonLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.restartRequired)
 
 	// ##########################################
 	// Cloud
@@ -149,7 +159,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_power_limit",
 			Help: "ShellyPlug configured power limit in watts",
 		},
-		commonLabels,
+		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerLimit)
 

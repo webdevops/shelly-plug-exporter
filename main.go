@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/webdevops/shelly-plug-exporter/config"
-	"github.com/webdevops/shelly-plug-exporter/shellyplug"
+	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
 
 const (
@@ -108,15 +108,14 @@ func startHttpServer() {
 		}
 	})
 
-	shellyplug.EnableDiscovery(
+	discovery.EnableDiscovery(
 		log.WithField("module", "discovery"),
 		opts.Shelly.ServiceDiscovery.Refresh,
 		opts.Shelly.ServiceDiscovery.Timeout,
 	)
 
 	mux.Handle("/metrics", promhttp.Handler())
-	mux.HandleFunc("/probe", shellyProbeTargets)
-	mux.HandleFunc("/probe/discovery", shellyProbeDiscovery)
+	mux.HandleFunc("/probe", shellyProbeDiscovery)
 
 	srv := &http.Server{
 		Addr:         opts.Server.Bind,

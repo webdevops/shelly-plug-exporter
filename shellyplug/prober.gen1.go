@@ -25,7 +25,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		targetLabels["plugName"] = result.Name
 
 		infoLabels["plugName"] = result.Name
-		infoLabels["plugType"] = result.Device.Type
+		infoLabels["plugModel"] = result.Device.Type
 
 		powerLimitLabels := copyLabelMap(targetLabels)
 		powerLimitLabels["switchID"] = ""

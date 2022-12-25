@@ -23,7 +23,9 @@ func (sp *ShellyPlug) initMetrics() {
 			"mac",
 			"hostname",
 			"plugName",
-			"plugType",
+			"plugModel",
+			"plugApp",
+			"plugGeneration",
 		},
 	)
 	sp.registry.MustRegister(sp.prometheus.info)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -132,11 +133,13 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	}
 
 	infoLabels := prometheus.Labels{
-		"target":   target.Address,
-		"mac":      "",
-		"hostname": "",
-		"plugName": "",
-		"plugType": "",
+		"target":         target.Address,
+		"mac":            "",
+		"hostname":       "",
+		"plugName":       "",
+		"plugModel":      "",
+		"plugApp":        "",
+		"plugGeneration": "",
 	}
 
 	shellyGeneration := 0
@@ -153,6 +156,9 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 		infoLabels["plugName"] = result.Name
 		infoLabels["mac"] = result.Mac
 		infoLabels["hostname"] = target.Hostname
+		infoLabels["plugModel"] = result.Model
+		infoLabels["plugApp"] = result.App
+		infoLabels["plugGeneration"] = strconv.Itoa(shellyGeneration)
 
 	} else {
 		targetLogger.Errorf(`failed to fetch settings: %v`, err)

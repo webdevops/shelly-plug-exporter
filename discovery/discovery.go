@@ -10,12 +10,15 @@ import (
 )
 
 const (
-	DiscoveryTargetHealthDead = 0
-	DiscoveryTargetHealthLow  = 1
-	DiscoveryTargetHealthGood = 10
+	TargetHealthDead = 0
+	TargetHealthLow  = 1
+	TargetHealthGood = 10
 
-	DiscoveryTargetHealthy   = true
-	DiscoveryTargetUnhealthy = false
+	TargetHealthy   = true
+	TargetUnhealthy = false
+
+	TargetTypeShellyPlug = "shellyplug"
+	TargetTypeShellyPlus = "shellyplus"
 )
 
 type (
@@ -64,6 +67,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Hostname: entry.Name,
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
+					Type:     TargetTypeShellyPlug,
 				})
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplus"):
 				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
@@ -71,6 +75,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Hostname: entry.Name,
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
+					Type:     TargetTypeShellyPlus,
 				})
 			}
 		}
@@ -80,14 +85,14 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 
 		// set all non-discovered targets to low health
 		for target := range d.targetList {
-			d.targetList[target].Health = DiscoveryTargetHealthLow
+			d.targetList[target].Health = TargetHealthLow
 		}
 
 		// set all discovered targets to good health
 		for _, row := range targetList {
 			target := row
 			d.targetList[target.Address] = &target
-			d.targetList[target.Address].Health = DiscoveryTargetHealthGood
+			d.targetList[target.Address].Health = TargetHealthGood
 		}
 		d.cleanup()
 	}()
@@ -112,13 +117,13 @@ func (d *serviceDiscovery) MarkTarget(address string, healthy bool) {
 
 	if target, exists := d.targetList[address]; exists {
 		if healthy {
-			d.targetList[address].Health = DiscoveryTargetHealthGood
+			d.targetList[address].Health = TargetHealthGood
 		} else {
 			d.targetList[address].Health = (target.Health - 1)
 		}
 	} else {
 		if healthy {
-			d.targetList[address].Health = DiscoveryTargetHealthGood
+			d.targetList[address].Health = TargetHealthGood
 		}
 	}
 
@@ -127,7 +132,7 @@ func (d *serviceDiscovery) MarkTarget(address string, healthy bool) {
 
 func (d *serviceDiscovery) cleanup() {
 	for address, target := range d.targetList {
-		if target.Health <= DiscoveryTargetHealthDead {
+		if target.Health <= TargetHealthDead {
 			d.logger.Debugf(`disabling unhealthy target "%v"`, target.Name())
 			delete(d.targetList, address)
 		}

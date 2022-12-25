@@ -157,7 +157,7 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	} else {
 		targetLogger.Errorf(`failed to fetch settings: %v`, err)
 		if discovery.ServiceDiscovery != nil {
-			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
 	}
 

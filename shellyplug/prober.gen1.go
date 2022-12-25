@@ -19,7 +19,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 
 	if result, err := shellyProber.GetSettings(); err == nil {
 		if discovery.ServiceDiscovery != nil {
-			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetHealthy)
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetHealthy)
 		}
 
 		targetLabels["plugName"] = result.Name
@@ -34,7 +34,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 	} else {
 		logger.Errorf(`failed to fetch settings: %v`, err)
 		if discovery.ServiceDiscovery != nil {
-			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
 	}
 
@@ -87,7 +87,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 	} else {
 		logger.Errorf(`failed to fetch status: %v`, err)
 		if discovery.ServiceDiscovery != nil {
-			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
 	}
 }

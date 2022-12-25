@@ -41,7 +41,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 		} else {
 			logger.Errorf(`failed to fetch status: %v`, err)
 			if discovery.ServiceDiscovery != nil {
-				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 			}
 		}
 
@@ -52,7 +52,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 		} else {
 			logger.Errorf(`failed to fetch status: %v`, err)
 			if discovery.ServiceDiscovery != nil {
-				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 			}
 		}
 
@@ -91,7 +91,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 					} else {
 						logger.Errorf(`failed to fetch status: %v`, err)
 						if discovery.ServiceDiscovery != nil {
-							discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+							discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 						}
 					}
 				}
@@ -101,7 +101,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 	} else {
 		logger.Errorf(`failed to fetch status: %v`, err)
 		if discovery.ServiceDiscovery != nil {
-			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.DiscoveryTargetUnhealthy)
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
 	}
 }

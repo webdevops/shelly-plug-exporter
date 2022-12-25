@@ -11,6 +11,7 @@ type (
 		Address  string
 		Port     int
 		Health   int
+		Type     string
 	}
 )
 

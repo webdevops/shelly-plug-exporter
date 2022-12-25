@@ -9,6 +9,7 @@ import (
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
+	cache "github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
@@ -63,6 +64,11 @@ func New(ctx context.Context, registry *prometheus.Registry, logger *log.Entry) 
 	sp.logger = logger
 	sp.initResty()
 	sp.initMetrics()
+
+	if globalCache == nil {
+		globalCache = cache.New(15*time.Minute, 1*time.Minute)
+	}
+
 	return &sp
 }
 
@@ -145,6 +151,7 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	shellyGeneration := 0
 	if result, err := sp.targetGetShellyInfo(target); err == nil {
 		if result.Gen != nil {
+			targetLogger.Debugf(`detected shelly device generation %v`, *result.Gen)
 			shellyGeneration = *result.Gen
 		} else {
 			shellyGeneration = 1
@@ -175,6 +182,4 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	default:
 		targetLogger.Warnf("unsupported Shelly generation %v", shellyGeneration)
 	}
-
-	targetLogger.Infof("shellyGeneration: %v", shellyGeneration)
 }

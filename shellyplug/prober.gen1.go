@@ -15,6 +15,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		Target: target,
 		Client: sp.client,
 		Ctx:    sp.ctx,
+		Cache:  globalCache,
 	}
 
 	if result, err := shellyProber.GetSettings(); err == nil {

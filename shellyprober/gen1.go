@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/patrickmn/go-cache"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -13,6 +14,7 @@ type (
 		Target discovery.DiscoveryTarget
 		Client *resty.Client
 		Ctx    context.Context
+		Cache  *cache.Cache
 	}
 
 	ShellyProberGen1ResultSettings struct {
@@ -97,18 +99,20 @@ type (
 	}
 )
 
+func (sp *ShellyProberGen1) fetch(url string, target interface{}) error {
+	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&target).ForceContentType("application/json")
+	_, err := r.Get(sp.Target.Url(url))
+	return err
+}
+
 func (sp *ShellyProberGen1) GetSettings() (ShellyProberGen1ResultSettings, error) {
 	result := ShellyProberGen1ResultSettings{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url("/settings"))
+	err := sp.fetch("/settings", &result)
 	return result, err
 }
 
 func (sp *ShellyProberGen1) GetStatus() (ShellyProberGen1ResultStatus, error) {
 	result := ShellyProberGen1ResultStatus{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url("/status"))
+	err := sp.fetch("/status", &result)
 	return result, err
 }

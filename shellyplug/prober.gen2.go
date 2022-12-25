@@ -2,7 +2,6 @@ package shellyplug
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -27,9 +26,11 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 		Target: target,
 		Client: sp.client,
 		Ctx:    sp.ctx,
+		Cache:  globalCache,
 	}
 
 	if shellyConfig, err := shellyProber.GetShellyConfig(); err == nil {
+		// systemStatus
 		if result, err := shellyProber.GetSysStatus(); err == nil {
 			sp.prometheus.sysUnixtime.With(targetLabels).Set(float64(result.Unixtime))
 			sp.prometheus.sysUptime.With(targetLabels).Set(float64(result.Uptime))
@@ -39,25 +40,21 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 			sp.prometheus.sysFsFree.With(targetLabels).Set(float64(result.FsFree))
 			sp.prometheus.restartRequired.With(targetLabels).Set(boolToFloat64(result.RestartRequired))
 		} else {
-			logger.Errorf(`failed to fetch status: %v`, err)
-			if discovery.ServiceDiscovery != nil {
-				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
-			}
+			logger.Errorf(`failed to decode sysConfig: %v`, err)
 		}
 
+		// wifiStatus
 		if result, err := shellyProber.GetWifiStatus(); err == nil {
 			wifiLabels := copyLabelMap(targetLabels)
 			wifiLabels["ssid"] = result.Ssid
 			sp.prometheus.wifiRssi.With(wifiLabels).Set(float64(result.Rssi))
 		} else {
-			logger.Errorf(`failed to fetch status: %v`, err)
-			if discovery.ServiceDiscovery != nil {
-				discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
-			}
+			logger.Errorf(`failed to decode wifiStatus: %v`, err)
 		}
 
 		for configName, configValue := range shellyConfig {
 			switch {
+			// switch
 			case strings.HasPrefix(configName, "switch:"):
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetSwitchStatus(configData.Id); err == nil {
@@ -77,9 +74,10 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						// total is provided as watt/minutes, we want watt/hours
 						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.Apower / 60)
 					} else {
-						fmt.Println(err)
+						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}
 				}
+			// temperatureSensor
 			case strings.HasPrefix(configName, "temperature:"):
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetTemperatureStatus(configData.Id); err == nil {
@@ -89,15 +87,11 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 
 						sp.prometheus.temp.With(tempLabels).Set(result.TC)
 					} else {
-						logger.Errorf(`failed to fetch status: %v`, err)
-						if discovery.ServiceDiscovery != nil {
-							discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
-						}
+						logger.Errorf(`failed to decode temperatureStatus: %v`, err)
 					}
 				}
 			}
 		}
-
 	} else {
 		logger.Errorf(`failed to fetch status: %v`, err)
 		if discovery.ServiceDiscovery != nil {

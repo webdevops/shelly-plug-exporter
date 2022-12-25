@@ -2,9 +2,11 @@ package shellyprober
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/patrickmn/go-cache"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -14,6 +16,7 @@ type (
 		Target discovery.DiscoveryTarget
 		Client *resty.Client
 		Ctx    context.Context
+		Cache  *cache.Cache
 	}
 
 	ShellyProberGen2ResultShellyConfig map[string]interface{}
@@ -68,42 +71,58 @@ type (
 	}
 )
 
+func (sp *ShellyProberGen2) fetch(url string, target interface{}) error {
+	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&target).ForceContentType("application/json")
+	_, err := r.Get(sp.Target.Url(url))
+	return err
+}
+
+func (sp *ShellyProberGen2) fetchWithCache(url string, target interface{}) error {
+	url = sp.Target.Url(url)
+	cacheKey := url
+
+	if val, ok := sp.Cache.Get(cacheKey); ok {
+		if data, err := json.Marshal(val); err == nil {
+			if err := json.Unmarshal(data, target); err == nil {
+				return nil
+			}
+		}
+	}
+
+	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&target).ForceContentType("application/json")
+	_, err := r.Get(url)
+
+	sp.Cache.SetDefault(cacheKey, target)
+
+	return err
+}
+
 func (sp *ShellyProberGen2) GetSysStatus() (ShellyProberGen2ResultSysStatus, error) {
 	result := ShellyProberGen2ResultSysStatus{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url("/rpc/Sys.GetStatus"))
+	err := sp.fetch("/rpc/Sys.GetStatus", &result)
 	return result, err
 }
 
 func (sp *ShellyProberGen2) GetShellyConfig() (ShellyProberGen2ResultShellyConfig, error) {
 	result := ShellyProberGen2ResultShellyConfig{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url("/rpc/Shelly.GetConfig"))
+	err := sp.fetchWithCache("/rpc/Shelly.GetConfig", &result)
 	return result, err
 }
 
 func (sp *ShellyProberGen2) GetWifiStatus() (ShellyProberGen2ResultWifiStatus, error) {
 	result := ShellyProberGen2ResultWifiStatus{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url("/rpc/Wifi.GetStatus"))
+	err := sp.fetch("/rpc/Wifi.GetStatus", &result)
 	return result, err
 }
 
 func (sp *ShellyProberGen2) GetTemperatureStatus(id int) (ShellyProberGen2ResultTemperature, error) {
 	result := ShellyProberGen2ResultTemperature{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url(fmt.Sprintf("/rpc/Temperature.GetStatus?id=%d", id)))
+	err := sp.fetch(fmt.Sprintf("/rpc/Temperature.GetStatus?id=%d", id), &result)
 	return result, err
 }
 
 func (sp *ShellyProberGen2) GetSwitchStatus(id int) (ShellyProberGen2ResultSwitch, error) {
 	result := ShellyProberGen2ResultSwitch{}
-
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url(fmt.Sprintf("/rpc/Switch.GetStatus?id=%d", id)))
+	err := sp.fetch(fmt.Sprintf("/rpc/Switch.GetStatus?id=%d", id), &result)
 	return result, err
 }

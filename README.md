@@ -5,7 +5,7 @@ Shelly plug exporter
 [![DockerHub](https://img.shields.io/badge/DockerHub-webdevops%2Fshelly--plug--exporter-blue)](https://hub.docker.com/r/webdevops/shelly-plug-exporter/)
 [![Quay.io](https://img.shields.io/badge/Quay.io-webdevops%2Fshelly--plug--exporter-blue)](https://quay.io/repository/webdevops/shelly-plug-exporter)
 
-Prometheus exporter for Shelly Plugs
+Prometheus exporter for Shelly Plugs and devices (generation 1 and 2)
 Can probe list of targets or use mDNS service discovery
 
 Usage
@@ -80,11 +80,10 @@ scrape_configs:
 HTTP Endpoints
 --------------
 
-| Endpoint           | Description                                                                                                              |
-|--------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `/metrics`         | Default prometheus golang metrics                                                                                        |
-| `/probe`           | Probe shelly plugs (with `?target=xxx.xxx.xxx.xxx` endpoints, can probe multiple endpoints eg `?target=xxx&target=yyyy`) |
-| `/probe/discovery` | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs (must be run on host network)                        |
+| Endpoint   | Description                                                                                                              |
+|------------|--------------------------------------------------------------------------------------------------------------------------|
+| `/metrics` | Default prometheus golang metrics                                                                                        |
+| `/probe`   | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs (must be run on host network)                        |
 
 Metrics
 -------
@@ -109,4 +108,5 @@ Metrics
 | `shellyplug_system_unixtime`     | System time (unixtime)                     |
 | `shellyplug_system_uptime`       | System uptime (in seconds)                 |
 | `shellyplug_update_needed`       | Status if updated is needed                |
+| `shellyplug_restart_required`    | Status if restart of device is needed      |
 | `shellyplug_wifi_rssi`           | Wifi rssi                                  |

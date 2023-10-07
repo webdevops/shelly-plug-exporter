@@ -27,6 +27,7 @@ type (
 		powerFactor          *prometheus.GaugeVec
 		powerFrequency       *prometheus.GaugeVec
 		powerVoltage         *prometheus.GaugeVec
+		powerAmpere          *prometheus.GaugeVec
 
 		sysUnixtime *prometheus.GaugeVec
 		sysUptime   *prometheus.GaugeVec
@@ -233,6 +234,15 @@ func (sp *ShellyPlug) initMetrics() {
 		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerVoltage)
+
+	sp.prometheus.powerAmpere = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_power_ampere",
+			Help: "ShellyPlug configured power ampere",
+		},
+		powerLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.powerAmpere)
 
 	// ##########################################
 	// System

@@ -70,8 +70,9 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						powerUsageLabels := copyLabelMap(targetLabels)
 						powerUsageLabels["id"] = fmt.Sprintf("switch:%d", configData.Id)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.Current)
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.Apower)
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.Apower)
+						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.Voltage)
+						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.Current)
 					} else {
 						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}
@@ -84,41 +85,34 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						powerUsageLabels := copyLabelMap(targetLabels)
 						powerUsageLabels["id"] = fmt.Sprintf("em:%d:A", configData.Id)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.ACurrent)
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.AActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.AAprtPower)
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.AActPower)
 						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.APf)
 						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.AFreq)
 						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.AVoltage)
+						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.ACurrent)
 
 						// phase B
 						powerUsageLabels = copyLabelMap(targetLabels)
 						powerUsageLabels["id"] = fmt.Sprintf("em:%d:B", configData.Id)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.BCurrent)
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.BActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.BAprtPower)
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.BActPower)
 						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.BPf)
 						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.BFreq)
 						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.BVoltage)
+						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.BCurrent)
 
 						// phase C
 						powerUsageLabels = copyLabelMap(targetLabels)
 						powerUsageLabels["id"] = fmt.Sprintf("em:%d:C", configData.Id)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.CCurrent)
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.CActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.CAprtPower)
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.CActPower)
 						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.CPf)
 						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.CFreq)
 						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.CVoltage)
-
-						// phase C
-						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = "em:total"
-						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.TotalCurrent)
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.TotalActPower)
+						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.CCurrent)
 					} else {
 						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}

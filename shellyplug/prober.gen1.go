@@ -70,6 +70,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 
 			sp.prometheus.powerCurrent.With(powerUsageLabels).Set(powerUsage.Power)
 			// total is provided as watt/minutes, we want watt/hours
+			powerUsageLabels["direction"] = "in"
 			sp.prometheus.powerTotal.With(powerUsageLabels).Set(powerUsage.Total / 60)
 		}
 

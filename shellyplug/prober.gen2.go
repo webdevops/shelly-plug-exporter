@@ -124,43 +124,49 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						// phase A
 						phase := "A"
 						powerUsageLabels := copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
+						powerUsageLabels["direction"] = "in"
 						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.ATotalActEnergy)
 
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.ATotalActRetEnergy)
+						powerUsageLabels["direction"] = "out"
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.ATotalActRetEnergy)
 
 						// phase B
 						phase = "B"
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
+						powerUsageLabels["direction"] = "in"
 						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.BTotalActEnergy)
 
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.BTotalActRetEnergy)
+						powerUsageLabels["direction"] = "out"
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.BTotalActRetEnergy)
 
 						// phase C
 						phase = "C"
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
+						powerUsageLabels["direction"] = "in"
 						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.CTotalActEnergy)
 
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.CTotalActRetEnergy)
+						powerUsageLabels["direction"] = "out"
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.CTotalActRetEnergy)
 					} else {
 						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}
-
 				}
+
 			// temperatureSensor
 			case strings.HasPrefix(configName, "temperature:"):
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {

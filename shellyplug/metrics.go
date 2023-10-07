@@ -195,7 +195,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_power_total",
 			Help: "ShellyPlug current power total in watts",
 		},
-		powerLabels,
+		append(powerLabels, "direction"),
 	)
 	sp.registry.MustRegister(sp.prometheus.powerTotal)
 

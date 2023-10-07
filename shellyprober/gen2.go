@@ -96,6 +96,18 @@ type (
 		TotalAprtPower      float64 `json:"total_aprt_power"`
 		UserCalibratedPhase []any   `json:"user_calibrated_phase"`
 	}
+
+	ShellyProberGen2ResultEmData struct {
+		ID                 int     `json:"id"`
+		ATotalActEnergy    float64 `json:"a_total_act_energy"`
+		ATotalActRetEnergy float64 `json:"a_total_act_ret_energy"`
+		BTotalActEnergy    float64 `json:"b_total_act_energy"`
+		BTotalActRetEnergy float64 `json:"b_total_act_ret_energy"`
+		CTotalActEnergy    float64 `json:"c_total_act_energy"`
+		CTotalActRetEnergy float64 `json:"c_total_act_ret_energy"`
+		TotalAct           float64 `json:"total_act"`
+		TotalActRet        float64 `json:"total_act_ret"`
+	}
 )
 
 func (sp *ShellyProberGen2) fetch(url string, target interface{}) error {
@@ -157,5 +169,11 @@ func (sp *ShellyProberGen2) GetSwitchStatus(id int) (ShellyProberGen2ResultSwitc
 func (sp *ShellyProberGen2) GetEmStatus(id int) (ShellyProberGen2ResultEm, error) {
 	result := ShellyProberGen2ResultEm{}
 	err := sp.fetch(fmt.Sprintf("/rpc/Em.GetStatus?id=%d", id), &result)
+	return result, err
+}
+
+func (sp *ShellyProberGen2) GetEmDataStatus(id int) (ShellyProberGen2ResultEmData, error) {
+	result := ShellyProberGen2ResultEmData{}
+	err := sp.fetch(fmt.Sprintf("/rpc/EmData.GetStatus?id=%d", id), &result)
 	return result, err
 }

@@ -82,8 +82,9 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetEmStatus(configData.Id); err == nil {
 						// phase A
+						phase := "A"
 						powerUsageLabels := copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:A", configData.Id)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
 						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.AActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.AAprtPower)
@@ -93,8 +94,9 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.ACurrent)
 
 						// phase B
+						phase = "B"
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:B", configData.Id)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
 						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.BActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.BAprtPower)
@@ -104,8 +106,9 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.BCurrent)
 
 						// phase C
+						phase = "C"
 						powerUsageLabels = copyLabelMap(targetLabels)
-						powerUsageLabels["id"] = fmt.Sprintf("em:%d:C", configData.Id)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name
 						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.CActPower)
 						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.CAprtPower)
@@ -116,6 +119,47 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 					} else {
 						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}
+
+					if result, err := shellyProber.GetEmDataStatus(configData.Id); err == nil {
+						// phase A
+						phase := "A"
+						powerUsageLabels := copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.ATotalActEnergy)
+
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.ATotalActRetEnergy)
+
+						// phase B
+						phase = "B"
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.BTotalActEnergy)
+
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.BTotalActRetEnergy)
+
+						// phase C
+						phase = "D"
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.CTotalActEnergy)
+
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:out", configData.Id, phase)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.CTotalActRetEnergy)
+					} else {
+						logger.Errorf(`failed to decode switchStatus: %v`, err)
+					}
+
 				}
 			// temperatureSensor
 			case strings.HasPrefix(configName, "temperature:"):

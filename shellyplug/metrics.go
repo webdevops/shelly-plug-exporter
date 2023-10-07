@@ -4,11 +4,44 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+type (
+	shellyPlugMetrics struct {
+		info            *prometheus.GaugeVec
+		temp            *prometheus.GaugeVec
+		overTemp        *prometheus.GaugeVec
+		wifiRssi        *prometheus.GaugeVec
+		updateNeeded    *prometheus.GaugeVec
+		restartRequired *prometheus.GaugeVec
+
+		cloudEnabled   *prometheus.GaugeVec
+		cloudConnected *prometheus.GaugeVec
+
+		switchOn        *prometheus.GaugeVec
+		switchOverpower *prometheus.GaugeVec
+		switchTimer     *prometheus.GaugeVec
+
+		powerCurrent         *prometheus.GaugeVec
+		powerApparentCurrent *prometheus.GaugeVec
+		powerTotal           *prometheus.GaugeVec
+		powerLimit           *prometheus.GaugeVec
+		powerFactor          *prometheus.GaugeVec
+		powerFrequency       *prometheus.GaugeVec
+		powerVoltage         *prometheus.GaugeVec
+
+		sysUnixtime *prometheus.GaugeVec
+		sysUptime   *prometheus.GaugeVec
+		sysMemTotal *prometheus.GaugeVec
+		sysMemFree  *prometheus.GaugeVec
+		sysFsSize   *prometheus.GaugeVec
+		sysFsFree   *prometheus.GaugeVec
+	}
+)
+
 func (sp *ShellyPlug) initMetrics() {
 	commonLabels := []string{"target", "mac", "plugName"}
-	tempLabels := append(commonLabels, "sensorID", "sensorName")
-	switchLabels := append(commonLabels, "switchID", "switchName")
-	powerLabels := append(commonLabels, "switchID", "switchName")
+	tempLabels := append(commonLabels, "id", "name")
+	switchLabels := append(commonLabels, "id", "name")
+	powerLabels := append(commonLabels, "id", "name")
 
 	// ##########################################
 	// Info
@@ -113,7 +146,7 @@ func (sp *ShellyPlug) initMetrics() {
 			Name: "shellyplug_switch_on",
 			Help: "ShellyPlug switch on status",
 		},
-		append(switchLabels, "switchSource"),
+		append(switchLabels, "source"),
 	)
 	sp.registry.MustRegister(sp.prometheus.switchOn)
 
@@ -141,11 +174,20 @@ func (sp *ShellyPlug) initMetrics() {
 	sp.prometheus.powerCurrent = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "shellyplug_power_current",
-			Help: "ShellyPlug current power usage in watts",
+			Help: "ShellyPlug current power current in watts",
 		},
 		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerCurrent)
+
+	sp.prometheus.powerApparentCurrent = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_power_apparentcurrent",
+			Help: "ShellyPlug current power apparent current in VA",
+		},
+		powerLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.powerApparentCurrent)
 
 	sp.prometheus.powerTotal = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -164,6 +206,33 @@ func (sp *ShellyPlug) initMetrics() {
 		powerLabels,
 	)
 	sp.registry.MustRegister(sp.prometheus.powerLimit)
+
+	sp.prometheus.powerFactor = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_power_factor",
+			Help: "ShellyPlug configured power factor",
+		},
+		powerLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.powerFactor)
+
+	sp.prometheus.powerFrequency = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_power_frequency",
+			Help: "ShellyPlug configured power frequency in Hz",
+		},
+		powerLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.powerFrequency)
+
+	sp.prometheus.powerVoltage = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "shellyplug_power_voltage",
+			Help: "ShellyPlug configured power voltage",
+		},
+		powerLabels,
+	)
+	sp.registry.MustRegister(sp.prometheus.powerVoltage)
 
 	// ##########################################
 	// System

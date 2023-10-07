@@ -53,7 +53,7 @@ func (d *serviceDiscovery) init() {
 func (d *serviceDiscovery) Run(timeout time.Duration) {
 	wg := sync.WaitGroup{}
 	// Make a channel for results and start listening
-	entriesCh := make(chan *mdns.ServiceEntry, 4)
+	entriesCh := make(chan *mdns.ServiceEntry, 15)
 
 	wg.Add(1)
 	go func() {
@@ -77,7 +77,16 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Address:  entry.AddrV4.String(),
 					Type:     TargetTypeShellyPlus,
 				})
+			case strings.HasPrefix(strings.ToLower(entry.Name), "shellypro"):
+				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
+				targetList = append(targetList, DiscoveryTarget{
+					Hostname: entry.Name,
+					Port:     entry.Port,
+					Address:  entry.AddrV4.String(),
+					Type:     TargetTypeShellyPlus,
+				})
 			}
+
 		}
 
 		d.lock.Lock()

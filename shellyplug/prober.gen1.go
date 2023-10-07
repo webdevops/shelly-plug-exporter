@@ -1,7 +1,7 @@
 package shellyplug
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -29,8 +29,8 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		infoLabels["plugModel"] = result.Device.Type
 
 		powerLimitLabels := copyLabelMap(targetLabels)
-		powerLimitLabels["switchID"] = ""
-		powerLimitLabels["switchName"] = ""
+		powerLimitLabels["id"] = "meter:0"
+		powerLimitLabels["name"] = ""
 		sp.prometheus.powerLimit.With(powerLimitLabels).Set(result.MaxPower)
 	} else {
 		logger.Errorf(`failed to fetch settings: %v`, err)
@@ -50,8 +50,8 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		sp.prometheus.sysFsFree.With(targetLabels).Set(float64(result.FsFree))
 
 		tempLabels := copyLabelMap(targetLabels)
-		tempLabels["sensorID"] = ""
-		tempLabels["sensorName"] = "system"
+		tempLabels["id"] = "sensor:0"
+		tempLabels["name"] = "system"
 		sp.prometheus.temp.With(tempLabels).Set(result.Temperature)
 		sp.prometheus.overTemp.With(tempLabels).Set(boolToFloat64(result.Overtemperature))
 
@@ -65,8 +65,8 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 
 		for relayID, powerUsage := range result.Meters {
 			powerUsageLabels := copyLabelMap(targetLabels)
-			powerUsageLabels["switchID"] = strconv.Itoa(relayID)
-			powerUsageLabels["switchName"] = targetLabels["plugName"]
+			powerUsageLabels["id"] = fmt.Sprintf("meter:%d", relayID)
+			powerUsageLabels["name"] = targetLabels["plugName"]
 
 			sp.prometheus.powerCurrent.With(powerUsageLabels).Set(powerUsage.Power)
 			// total is provided as watt/minutes, we want watt/hours
@@ -75,11 +75,11 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 
 		for relayID, relay := range result.Relays {
 			switchLabels := copyLabelMap(targetLabels)
-			switchLabels["switchID"] = strconv.Itoa(relayID)
-			switchLabels["switchName"] = targetLabels["plugName"]
+			switchLabels["id"] = fmt.Sprintf("relay:%d", relayID)
+			switchLabels["name"] = targetLabels["plugName"]
 
 			switchOnLabels := copyLabelMap(switchLabels)
-			switchOnLabels["switchSource"] = relay.Source
+			switchOnLabels["source"] = relay.Source
 
 			sp.prometheus.switchOn.With(switchOnLabels).Set(boolToFloat64(relay.Ison))
 			sp.prometheus.switchOverpower.With(switchLabels).Set(boolToFloat64(relay.Overpower))

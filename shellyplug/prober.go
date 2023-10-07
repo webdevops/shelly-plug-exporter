@@ -28,32 +28,7 @@ type (
 			lock sync.RWMutex
 		}
 
-		prometheus struct {
-			info            *prometheus.GaugeVec
-			temp            *prometheus.GaugeVec
-			overTemp        *prometheus.GaugeVec
-			wifiRssi        *prometheus.GaugeVec
-			updateNeeded    *prometheus.GaugeVec
-			restartRequired *prometheus.GaugeVec
-
-			cloudEnabled   *prometheus.GaugeVec
-			cloudConnected *prometheus.GaugeVec
-
-			switchOn        *prometheus.GaugeVec
-			switchOverpower *prometheus.GaugeVec
-			switchTimer     *prometheus.GaugeVec
-
-			powerCurrent *prometheus.GaugeVec
-			powerTotal   *prometheus.GaugeVec
-			powerLimit   *prometheus.GaugeVec
-
-			sysUnixtime *prometheus.GaugeVec
-			sysUptime   *prometheus.GaugeVec
-			sysMemTotal *prometheus.GaugeVec
-			sysMemFree  *prometheus.GaugeVec
-			sysFsSize   *prometheus.GaugeVec
-			sysFsFree   *prometheus.GaugeVec
-		}
+		prometheus shellyPlugMetrics
 	}
 )
 

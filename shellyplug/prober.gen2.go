@@ -2,7 +2,7 @@ package shellyplug
 
 import (
 	"encoding/json"
-	"strconv"
+	"fmt"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -59,20 +59,66 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetSwitchStatus(configData.Id); err == nil {
 						switchLabels := copyLabelMap(targetLabels)
-						switchLabels["switchID"] = strconv.Itoa(configData.Id)
-						switchLabels["switchName"] = configData.Name
+						switchLabels["id"] = fmt.Sprintf("switch:%d", configData.Id)
+						switchLabels["name"] = configData.Name
 
 						switchOnLabels := copyLabelMap(switchLabels)
-						switchOnLabels["switchSource"] = result.Source
+						switchOnLabels["source"] = result.Source
 
 						sp.prometheus.switchOn.With(switchOnLabels).Set(boolToFloat64(result.Output))
 
 						powerUsageLabels := copyLabelMap(targetLabels)
-						powerUsageLabels["switchID"] = strconv.Itoa(configData.Id)
-						powerUsageLabels["switchName"] = configData.Name
+						powerUsageLabels["id"] = fmt.Sprintf("switch:%d", configData.Id)
+						powerUsageLabels["name"] = configData.Name
 						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.Current)
-						// total is provided as watt/minutes, we want watt/hours
-						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.Apower / 60)
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.Apower)
+					} else {
+						logger.Errorf(`failed to decode switchStatus: %v`, err)
+					}
+				}
+			// em
+			case strings.HasPrefix(configName, "em:"):
+				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
+					if result, err := shellyProber.GetEmStatus(configData.Id); err == nil {
+						// phase A
+						powerUsageLabels := copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:A", configData.Id)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.ACurrent)
+						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.AAprtPower)
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.AActPower)
+						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.APf)
+						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.AFreq)
+						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.AVoltage)
+
+						// phase B
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:B", configData.Id)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.BCurrent)
+						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.BAprtPower)
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.BActPower)
+						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.BPf)
+						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.BFreq)
+						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.BVoltage)
+
+						// phase C
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = fmt.Sprintf("em:%d:C", configData.Id)
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.CCurrent)
+						sp.prometheus.powerApparentCurrent.With(powerUsageLabels).Set(result.CAprtPower)
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.CActPower)
+						sp.prometheus.powerFactor.With(powerUsageLabels).Set(result.CPf)
+						sp.prometheus.powerFrequency.With(powerUsageLabels).Set(result.CFreq)
+						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.CVoltage)
+
+						// phase C
+						powerUsageLabels = copyLabelMap(targetLabels)
+						powerUsageLabels["id"] = "em:total"
+						powerUsageLabels["name"] = configData.Name
+						sp.prometheus.powerCurrent.With(powerUsageLabels).Set(result.TotalCurrent)
+						sp.prometheus.powerTotal.With(powerUsageLabels).Set(result.TotalActPower)
 					} else {
 						logger.Errorf(`failed to decode switchStatus: %v`, err)
 					}
@@ -82,8 +128,8 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetTemperatureStatus(configData.Id); err == nil {
 						tempLabels := copyLabelMap(targetLabels)
-						tempLabels["sensorID"] = strconv.Itoa(configData.Id)
-						tempLabels["sensorName"] = configData.Name
+						tempLabels["id"] = fmt.Sprintf("sensor:%d", configData.Id)
+						tempLabels["name"] = configData.Name
 
 						sp.prometheus.temp.With(tempLabels).Set(result.TC)
 					} else {

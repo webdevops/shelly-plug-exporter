@@ -27,7 +27,7 @@ type (
 			}
 
 			ServiceDiscovery struct {
-				Timeout time.Duration `long:"shelly.servicediscovery.timeout"  env:"SHELLY_SERVICEDISCOVERY_TIMEOUT"  description:"mDNS discovery response timeout" default:"5s"`
+				Timeout time.Duration `long:"shelly.servicediscovery.timeout"  env:"SHELLY_SERVICEDISCOVERY_TIMEOUT"  description:"mDNS discovery response timeout" default:"20s"`
 				Refresh time.Duration `long:"shelly.servicediscovery.refresh"  env:"SHELLY_SERVICEDISCOVERY_REFRESH"  description:"mDNS discovery refresh time" default:"15m"`
 			}
 		}

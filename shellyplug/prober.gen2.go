@@ -146,7 +146,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						sp.prometheus.powerTotal.With(powerUsageLabels).Set(-1 * result.BTotalActRetEnergy)
 
 						// phase C
-						phase = "D"
+						phase = "C"
 						powerUsageLabels = copyLabelMap(targetLabels)
 						powerUsageLabels["id"] = fmt.Sprintf("em:%d:%s:in", configData.Id, phase)
 						powerUsageLabels["name"] = configData.Name

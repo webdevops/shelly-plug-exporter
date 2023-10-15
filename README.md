@@ -88,25 +88,30 @@ HTTP Endpoints
 Metrics
 -------
 
-| Metric                           | Description                                |
-|----------------------------------|--------------------------------------------|
-| `shellyplug_info`                | Device information                         |
-| `shellyplug_cloud_connected`     | Status if cloud connection established     |
-| `shellyplug_cloud_enabled`       | Status if cloud connection enabled         |
-| `shellyplug_overtemperature`     | Status if temperature reached limit        |
-| `shellyplug_temperature`         | Device temperature                         |
-| `shellyplug_switch_on`           | Status if relay switch is on or off        |
-| `shellyplug_switch_overpower`    | Status if relay switch triggered overpower |
-| `shellyplug_switch_timer`        | Status if relay switch has timer           |
-| `shellyplug_power_current`       | Current power usage                        |
-| `shellyplug_power_total`         | Total power usage in watt/hours            |
-| `shellyplug_power_limit`         | Configured power limit                     |
-| `shellyplug_system_fs_free`      | System filesystem free space               |
-| `shellyplug_system_fs_size`      | System filesystem size                     |
-| `shellyplug_system_memory_free`  | System memory free                         |
-| `shellyplug_system_memory_total` | System memory size                         |
-| `shellyplug_system_unixtime`     | System time (unixtime)                     |
-| `shellyplug_system_uptime`       | System uptime (in seconds)                 |
-| `shellyplug_update_needed`       | Status if updated is needed                |
-| `shellyplug_restart_required`    | Status if restart of device is needed      |
-| `shellyplug_wifi_rssi`           | Wifi rssi                                  |
+| Metric                                  | Description                                |
+|-----------------------------------------|--------------------------------------------|
+| `shellyplug_info`                       | Device information                         |
+| `shellyplug_cloud_connected`            | Status if cloud connection established     |
+| `shellyplug_cloud_enabled`              | Status if cloud connection enabled         |
+| `shellyplug_overtemperature`            | Status if temperature reached limit        |
+| `shellyplug_temperature`                | Device temperature                         |
+| `shellyplug_switch_on`                  | Status if relay switch is on or off        |
+| `shellyplug_switch_overpower`           | Status if relay switch triggered overpower |
+| `shellyplug_switch_timer`               | Status if relay switch has timer           |
+| `shellyplug_power_load_current`         | Current power load                         |
+| `shellyplug_power_load_apparentcurrent` | Current power apparent load                |
+| `shellyplug_power_load_total`           | Total power load in watt/hours             |
+| `shellyplug_power_load_limit`           | Configured power limit                     |
+| `shellyplug_power_factor`               | Power factor                               |
+| `shellyplug_power_frequency`            | Power frequency in Hertz                   |
+| `shellyplug_power_voltage`              | Power voltage                              |
+| `shellyplug_power_ampere`               | Power ampere                               |
+| `shellyplug_system_fs_free`             | System filesystem free space               |
+| `shellyplug_system_fs_size`             | System filesystem size                     |
+| `shellyplug_system_memory_free`         | System memory free                         |
+| `shellyplug_system_memory_total`        | System memory size                         |
+| `shellyplug_system_unixtime`            | System time (unixtime)                     |
+| `shellyplug_system_uptime`              | System uptime (in seconds)                 |
+| `shellyplug_update_needed`              | Status if updated is needed                |
+| `shellyplug_restart_required`           | Status if restart of device is needed      |
+| `shellyplug_wifi_rssi`                  | Wifi rssi                                  |

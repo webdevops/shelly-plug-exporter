@@ -19,6 +19,7 @@ const (
 
 	TargetTypeShellyPlug = "shellyplug"
 	TargetTypeShellyPlus = "shellyplus"
+	TargetTypeShellyPro  = "shellypro"
 )
 
 type (
@@ -83,7 +84,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Hostname: entry.Name,
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
-					Type:     TargetTypeShellyPlus,
+					Type:     TargetTypeShellyPro,
 				})
 			}
 

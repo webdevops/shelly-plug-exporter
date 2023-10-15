@@ -31,7 +31,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		powerLimitLabels := copyLabelMap(targetLabels)
 		powerLimitLabels["id"] = "meter:0"
 		powerLimitLabels["name"] = ""
-		sp.prometheus.powerLimit.With(powerLimitLabels).Set(result.MaxPower)
+		sp.prometheus.powerLoadLimit.With(powerLimitLabels).Set(result.MaxPower)
 	} else {
 		logger.Errorf(`failed to fetch settings: %v`, err)
 		if discovery.ServiceDiscovery != nil {
@@ -68,10 +68,10 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 			powerUsageLabels["id"] = fmt.Sprintf("meter:%d", relayID)
 			powerUsageLabels["name"] = targetLabels["plugName"]
 
-			sp.prometheus.powerCurrent.With(powerUsageLabels).Set(powerUsage.Power)
+			sp.prometheus.powerLoadCurrent.With(powerUsageLabels).Set(powerUsage.Power)
 			// total is provided as watt/minutes, we want watt/hours
 			powerUsageLabels["direction"] = "in"
-			sp.prometheus.powerTotal.With(powerUsageLabels).Set(powerUsage.Total / 60)
+			sp.prometheus.powerLoadTotal.With(powerUsageLabels).Set(powerUsage.Total / 60)
 		}
 
 		for relayID, relay := range result.Relays {

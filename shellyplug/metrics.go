@@ -20,14 +20,14 @@ type (
 		switchOverpower *prometheus.GaugeVec
 		switchTimer     *prometheus.GaugeVec
 
-		powerCurrent         *prometheus.GaugeVec
-		powerApparentCurrent *prometheus.GaugeVec
-		powerTotal           *prometheus.GaugeVec
-		powerLimit           *prometheus.GaugeVec
-		powerFactor          *prometheus.GaugeVec
-		powerFrequency       *prometheus.GaugeVec
-		powerVoltage         *prometheus.GaugeVec
-		powerAmpere          *prometheus.GaugeVec
+		powerLoadCurrent         *prometheus.GaugeVec
+		powerLoadApparentCurrent *prometheus.GaugeVec
+		powerLoadTotal           *prometheus.GaugeVec
+		powerLoadLimit           *prometheus.GaugeVec
+		powerFactor              *prometheus.GaugeVec
+		powerFrequency           *prometheus.GaugeVec
+		powerVoltage             *prometheus.GaugeVec
+		powerAmpere              *prometheus.GaugeVec
 
 		sysUnixtime *prometheus.GaugeVec
 		sysUptime   *prometheus.GaugeVec
@@ -172,41 +172,41 @@ func (sp *ShellyPlug) initMetrics() {
 	// ##########################################
 	// Power
 
-	sp.prometheus.powerCurrent = prometheus.NewGaugeVec(
+	sp.prometheus.powerLoadCurrent = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "shellyplug_power_current",
-			Help: "ShellyPlug current power current in watts",
+			Name: "shellyplug_power_load_current",
+			Help: "ShellyPlug current power load current in watts",
 		},
 		powerLabels,
 	)
-	sp.registry.MustRegister(sp.prometheus.powerCurrent)
+	sp.registry.MustRegister(sp.prometheus.powerLoadCurrent)
 
-	sp.prometheus.powerApparentCurrent = prometheus.NewGaugeVec(
+	sp.prometheus.powerLoadApparentCurrent = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "shellyplug_power_apparentcurrent",
-			Help: "ShellyPlug current power apparent current in VA",
+			Name: "shellyplug_power_load_apparentcurrent",
+			Help: "ShellyPlug current power load apparent current in VA",
 		},
 		powerLabels,
 	)
-	sp.registry.MustRegister(sp.prometheus.powerApparentCurrent)
+	sp.registry.MustRegister(sp.prometheus.powerLoadApparentCurrent)
 
-	sp.prometheus.powerTotal = prometheus.NewGaugeVec(
+	sp.prometheus.powerLoadTotal = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "shellyplug_power_total",
-			Help: "ShellyPlug current power total in watts",
+			Name: "shellyplug_power_load_total",
+			Help: "ShellyPlug current power load total in watts",
 		},
 		append(powerLabels, "direction"),
 	)
-	sp.registry.MustRegister(sp.prometheus.powerTotal)
+	sp.registry.MustRegister(sp.prometheus.powerLoadTotal)
 
-	sp.prometheus.powerLimit = prometheus.NewGaugeVec(
+	sp.prometheus.powerLoadLimit = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "shellyplug_power_limit",
-			Help: "ShellyPlug configured power limit in watts",
+			Name: "shellyplug_power_load_limit",
+			Help: "ShellyPlug configured power load limit in watts",
 		},
 		powerLabels,
 	)
-	sp.registry.MustRegister(sp.prometheus.powerLimit)
+	sp.registry.MustRegister(sp.prometheus.powerLoadLimit)
 
 	sp.prometheus.powerFactor = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{

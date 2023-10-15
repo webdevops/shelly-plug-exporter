@@ -36,6 +36,9 @@ type (
 		ScheduleRev      int    `json:"schedule_rev"`
 		WebhookRev       int    `json:"webhook_rev"`
 		AvailableUpdates struct {
+			Stable struct {
+				Version string `json:"version"`
+			} `json:"stable"`
 		} `json:"available_updates"`
 	}
 

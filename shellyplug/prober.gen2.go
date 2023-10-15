@@ -39,6 +39,12 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 			sp.prometheus.sysFsSize.With(targetLabels).Set(float64(result.FsSize))
 			sp.prometheus.sysFsFree.With(targetLabels).Set(float64(result.FsFree))
 			sp.prometheus.restartRequired.With(targetLabels).Set(boolToFloat64(result.RestartRequired))
+
+			if result.AvailableUpdates.Stable.Version != "" {
+				sp.prometheus.updateNeeded.With(targetLabels).Set(1)
+			} else {
+				sp.prometheus.updateNeeded.With(targetLabels).Set(0)
+			}
 		} else {
 			logger.Errorf(`failed to decode sysConfig: %v`, err)
 		}

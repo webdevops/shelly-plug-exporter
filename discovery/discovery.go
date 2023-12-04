@@ -20,6 +20,7 @@ const (
 	TargetTypeShellyPlug = "shellyplug"
 	TargetTypeShellyPlus = "shellyplus"
 	TargetTypeShellyPro  = "shellypro"
+	TargetTypeShellyEm3  = "shellyem3"
 )
 
 type (
@@ -63,31 +64,14 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		for entry := range entriesCh {
 			switch {
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplug-"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
-				targetList = append(targetList, DiscoveryTarget{
-					Hostname: entry.Name,
-					Port:     entry.Port,
-					Address:  entry.AddrV4.String(),
-					Type:     TargetTypeShellyPlug,
-				})
+				targetList = append(targetList, createDiscoveryTarget(d, TargetTypeShellyPlug, entry))
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplus"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
-				targetList = append(targetList, DiscoveryTarget{
-					Hostname: entry.Name,
-					Port:     entry.Port,
-					Address:  entry.AddrV4.String(),
-					Type:     TargetTypeShellyPlus,
-				})
+				targetList = append(targetList, createDiscoveryTarget(d, TargetTypeShellyPlus, entry))
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellypro"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
-				targetList = append(targetList, DiscoveryTarget{
-					Hostname: entry.Name,
-					Port:     entry.Port,
-					Address:  entry.AddrV4.String(),
-					Type:     TargetTypeShellyPro,
-				})
+				targetList = append(targetList, createDiscoveryTarget(d, TargetTypeShellyPro, entry))
+			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyem3"):
+				targetList = append(targetList, createDiscoveryTarget(d, TargetTypeShellyEm3, entry))
 			}
-
 		}
 
 		d.lock.Lock()
@@ -119,6 +103,16 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 	close(entriesCh)
 
 	wg.Wait()
+}
+
+func createDiscoveryTarget(d *serviceDiscovery, TargetType string, entry *mdns.ServiceEntry) DiscoveryTarget {
+	d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
+	return DiscoveryTarget{
+		Hostname: entry.Name,
+		Port:     entry.Port,
+		Address:  entry.AddrV4.String(),
+		Type:     TargetType,
+	}
 }
 
 func (d *serviceDiscovery) MarkTarget(address string, healthy bool) {

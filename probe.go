@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/webdevops/shelly-plug-exporter/shellyplug"
 )
@@ -18,12 +18,12 @@ const (
 	DefaultTimeout = 30
 )
 
-func newShellyuProber(ctx context.Context, registry *prometheus.Registry, logger *log.Entry) *shellyplug.ShellyPlug {
+func newShellyuProber(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *shellyplug.ShellyPlug {
 	sp := shellyplug.New(ctx, registry, logger)
 	sp.SetUserAgent(UserAgent + gitTag)
-	sp.SetTimeout(opts.Shelly.Request.Timeout)
-	if len(opts.Shelly.Auth.Username) >= 1 {
-		sp.SetHttpAuth(opts.Shelly.Auth.Username, opts.Shelly.Auth.Password)
+	sp.SetTimeout(Opts.Shelly.Request.Timeout)
+	if len(Opts.Shelly.Auth.Username) >= 1 {
+		sp.SetHttpAuth(Opts.Shelly.Auth.Username, Opts.Shelly.Auth.Password)
 	}
 
 	return sp
@@ -57,12 +57,8 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	h.ServeHTTP(w, r)
 }
 
-func buildContextLoggerFromRequest(r *http.Request) *log.Entry {
-	logFields := log.Fields{
-		"requestPath": r.URL.Path,
-	}
-
-	return log.WithFields(logFields)
+func buildContextLoggerFromRequest(r *http.Request) *zap.SugaredLogger {
+	return logger.With(zap.String("requestPath", r.URL.Path))
 }
 
 func getPrometheusTimeout(r *http.Request, defaultTimeout float64) (timeout float64, err error) {

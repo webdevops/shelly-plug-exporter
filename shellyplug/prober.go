@@ -11,7 +11,7 @@ import (
 	resty "github.com/go-resty/resty/v2"
 	cache "github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -20,7 +20,7 @@ type (
 	ShellyPlug struct {
 		ctx      context.Context
 		client   *resty.Client
-		logger   *log.Entry
+		logger   *zap.SugaredLogger
 		registry *prometheus.Registry
 
 		targets struct {
@@ -32,7 +32,7 @@ type (
 	}
 )
 
-func New(ctx context.Context, registry *prometheus.Registry, logger *log.Entry) *ShellyPlug {
+func New(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *ShellyPlug {
 	sp := ShellyPlug{}
 	sp.ctx = ctx
 	sp.registry = registry
@@ -103,7 +103,7 @@ func (sp *ShellyPlug) Run() {
 }
 
 func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
-	targetLogger := sp.logger.WithField("target", target)
+	targetLogger := sp.logger.With(zap.String("target", target.Address))
 
 	targetLogger.Debugf("probing shelly %v", target.Name())
 

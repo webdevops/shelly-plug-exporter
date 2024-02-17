@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/mdns"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 
 type (
 	serviceDiscovery struct {
-		logger     *log.Entry
+		logger     *zap.SugaredLogger
 		targetList map[string]*DiscoveryTarget
 		lock       sync.RWMutex
 	}
@@ -34,7 +34,7 @@ var (
 	ServiceDiscovery *serviceDiscovery
 )
 
-func EnableDiscovery(logger *log.Entry, refreshTime time.Duration, timeout time.Duration) {
+func EnableDiscovery(logger *zap.SugaredLogger, refreshTime time.Duration, timeout time.Duration) {
 	ServiceDiscovery = &serviceDiscovery{}
 	ServiceDiscovery.logger = logger
 	ServiceDiscovery.init()

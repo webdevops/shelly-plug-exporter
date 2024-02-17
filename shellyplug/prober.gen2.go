@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 	"github.com/webdevops/shelly-plug-exporter/shellyprober"
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *log.Entry, infoLabels, targetLabels prometheus.Labels) {
+func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *zap.SugaredLogger, infoLabels, targetLabels prometheus.Labels) {
 	sp.prometheus.info.With(infoLabels).Set(1)
 
 	shellyProber := shellyprober.ShellyProberGen2{

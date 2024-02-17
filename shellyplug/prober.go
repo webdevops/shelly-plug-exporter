@@ -151,7 +151,11 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 
 	switch shellyGeneration {
 	case 1:
-		sp.collectFromTargetGen1(target, targetLogger, infoLabels, targetLabels)
+		if target.Type == "shellyem3" {
+			sp.collectFromTargetGen1em(target, targetLogger, infoLabels, targetLabels)
+		} else {
+			sp.collectFromTargetGen1(target, targetLogger, infoLabels, targetLabels)
+		}
 	case 2:
 		sp.collectFromTargetGen2(target, targetLogger, infoLabels, targetLabels)
 	default:

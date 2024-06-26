@@ -9,6 +9,7 @@ import (
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
+	"github.com/icholy/digest"
 	cache "github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
@@ -73,7 +74,12 @@ func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
 
 func (sp *ShellyPlug) SetHttpAuth(username, password string) {
 	sp.client.SetDisableWarn(true)
-	sp.client.SetBasicAuth(username, password)
+	sp.client.SetBasicAuth(username, password).SetTransport(
+		&digest.Transport{
+			Username: username,
+			Password: password,
+		},
+	)
 }
 
 func (sp *ShellyPlug) SetTargets(targets []discovery.DiscoveryTarget) {

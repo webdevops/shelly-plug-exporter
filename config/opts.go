@@ -24,6 +24,12 @@ type (
 				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login"`
 			}
 
+			Host struct {
+				ShellyPlug []string `long:"shelly.host.shellyplug"  env:"SHELLY_HOST_SHELLYPLUGS" env-delim:","  description:"shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPlus []string `long:"shelly.host.shellyplus"  env:"SHELLY_HOST_SHELLYPLUSES" env-delim:","  description:"shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPro  []string `long:"shelly.host.shellypro"  env:"SHELLY_HOST_SHELLYPROS" env-delim:","  description:"shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+			}
+
 			ServiceDiscovery struct {
 				Timeout time.Duration `long:"shelly.servicediscovery.timeout"  env:"SHELLY_SERVICEDISCOVERY_TIMEOUT"  description:"mDNS discovery response timeout" default:"15s"`
 				Refresh time.Duration `long:"shelly.servicediscovery.refresh"  env:"SHELLY_SERVICEDISCOVERY_REFRESH"  description:"mDNS discovery refresh time" default:"15m"`

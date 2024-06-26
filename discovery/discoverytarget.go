@@ -12,6 +12,7 @@ type (
 		Port     int
 		Health   int
 		Type     string
+		Static   bool
 	}
 )
 

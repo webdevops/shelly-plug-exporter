@@ -81,6 +81,9 @@ func startHttpServer() {
 		logger.With(zap.String("module", "discovery")),
 		Opts.Shelly.ServiceDiscovery.Refresh,
 		Opts.Shelly.ServiceDiscovery.Timeout,
+		Opts.Shelly.Host.ShellyPlug,
+		Opts.Shelly.Host.ShellyPlus,
+		Opts.Shelly.Host.ShellyPro,
 	)
 
 	mux.Handle("/metrics", promhttp.Handler())

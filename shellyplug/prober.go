@@ -73,6 +73,7 @@ func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
 
 func (sp *ShellyPlug) SetHttpAuth(username, password string) {
 	sp.client.SetDisableWarn(true)
+	sp.client.SetBasicAuth(username, password)
 	sp.client.SetDigestAuth(username, password)
 }
 

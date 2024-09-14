@@ -35,6 +35,7 @@ func main() {
 
 	logger.Infof("starting shellyplug-plug-exporter v%s (%s; %s; by %v)", gitTag, gitCommit, runtime.Version(), Author)
 	logger.Info(string(Opts.GetJson()))
+	initSystem()
 
 	logger.Infof("starting http server on %s", Opts.Server.Bind)
 	startHttpServer()

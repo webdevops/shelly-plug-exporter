@@ -21,7 +21,13 @@ type (
 
 			Auth struct {
 				Username string `long:"shelly.auth.username"  env:"SHELLY_AUTH_USERNAME"  description:"Username for shelly plug login"`
-				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login"`
+				Password string `long:"shelly.auth.password"  env:"SHELLY_AUTH_PASSWORD"  description:"Password for shelly plug login" json:"-"`
+			}
+
+			Host struct {
+				ShellyPlug []string `long:"shelly.host.shellyplug"  env:"SHELLY_HOST_SHELLYPLUGS" env-delim:","  description:"shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPlus []string `long:"shelly.host.shellyplus"  env:"SHELLY_HOST_SHELLYPLUSES" env-delim:","  description:"shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPro  []string `long:"shelly.host.shellypro"  env:"SHELLY_HOST_SHELLYPROS" env-delim:","  description:"shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
 			}
 
 			ServiceDiscovery struct {

@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -24,9 +25,10 @@ const (
 
 type (
 	serviceDiscovery struct {
-		logger     *zap.SugaredLogger
-		targetList map[string]*DiscoveryTarget
-		lock       sync.RWMutex
+		logger      *zap.SugaredLogger
+		targetList  map[string]*DiscoveryTarget
+		lock        sync.RWMutex
+		staticHosts []DiscoveryTarget
 	}
 )
 
@@ -34,10 +36,10 @@ var (
 	ServiceDiscovery *serviceDiscovery
 )
 
-func EnableDiscovery(logger *zap.SugaredLogger, refreshTime time.Duration, timeout time.Duration) {
+func EnableDiscovery(logger *zap.SugaredLogger, refreshTime time.Duration, timeout time.Duration, shellyplugs []string, shellyplus []string, shellypro []string) {
 	ServiceDiscovery = &serviceDiscovery{}
 	ServiceDiscovery.logger = logger
-	ServiceDiscovery.init()
+	ServiceDiscovery.init(shellyplugs, shellyplus, shellypro)
 
 	go func() {
 		for {
@@ -47,8 +49,25 @@ func EnableDiscovery(logger *zap.SugaredLogger, refreshTime time.Duration, timeo
 	}()
 }
 
-func (d *serviceDiscovery) init() {
+func (d *serviceDiscovery) init(shellyplugs []string, shellyplus []string, shellypro []string) {
 	d.targetList = map[string]*DiscoveryTarget{}
+	var staticHosts []DiscoveryTarget
+	for _, entry := range shellyplugs {
+		if entry != "" {
+			staticHosts = append(staticHosts, discoveryTargetFromStatic(entry, TargetTypeShellyPlug))
+		}
+	}
+	for _, entry := range shellyplus {
+		if entry != "" {
+			staticHosts = append(staticHosts, discoveryTargetFromStatic(entry, TargetTypeShellyPlus))
+		}
+	}
+	for _, entry := range shellypro {
+		if entry != "" {
+			staticHosts = append(staticHosts, discoveryTargetFromStatic(entry, TargetTypeShellyPro))
+		}
+	}
+	d.staticHosts = staticHosts
 }
 
 func (d *serviceDiscovery) Run(timeout time.Duration) {
@@ -60,6 +79,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 	go func() {
 		defer wg.Done()
 		var targetList []DiscoveryTarget
+		targetList = append(targetList, d.staticHosts...)
 		for entry := range entriesCh {
 			switch {
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplug-"):
@@ -69,6 +89,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
 					Type:     TargetTypeShellyPlug,
+					Static:   false,
 				})
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplus"):
 				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
@@ -77,6 +98,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
 					Type:     TargetTypeShellyPlus,
+					Static:   false,
 				})
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellypro"):
 				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
@@ -85,10 +107,11 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Port:     entry.Port,
 					Address:  entry.AddrV4.String(),
 					Type:     TargetTypeShellyPro,
+					Static:   false,
 				})
 			}
-
 		}
+		d.logger.Debugf(`Total targets: "%v"`, targetList)
 
 		d.lock.Lock()
 		defer d.lock.Unlock()
@@ -126,6 +149,10 @@ func (d *serviceDiscovery) MarkTarget(address string, healthy bool) {
 	defer d.lock.Unlock()
 
 	if target, exists := d.targetList[address]; exists {
+		if target.Static {
+			// Assume Static targets are always healthy
+			return
+		}
 		if healthy {
 			d.targetList[address].Health = TargetHealthGood
 		} else {
@@ -161,4 +188,30 @@ func (d *serviceDiscovery) GetTargetList() []DiscoveryTarget {
 	}
 
 	return targetList
+}
+
+func discoveryTargetFromStatic(entry string, typ string) DiscoveryTarget {
+	parts := strings.Split(entry, ":")
+	var name string
+	var port int
+	if len(parts) == 2 {
+		name = parts[0]
+		var err error
+		port, err = strconv.Atoi(parts[1])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		name = parts[0]
+		port = 80
+	}
+
+	return DiscoveryTarget{
+		Hostname: name,
+		Port:     port,
+		Address:  name,
+		Type:     typ,
+		Static:   true,
+		Health:   TargetHealthGood,
+	}
 }

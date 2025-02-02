@@ -62,7 +62,6 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 			switch {
 			// switch
 			case strings.HasPrefix(configName, "switch:"):
-				fmt.Println(configName)
 				if configData, err := decodeShellyConfigValueToItem(configValue); err == nil {
 					if result, err := shellyProber.GetSwitchStatus(configData.Id); err == nil {
 						switchLabels := copyLabelMap(targetLabels)

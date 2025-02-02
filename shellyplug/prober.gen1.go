@@ -13,7 +13,7 @@ import (
 func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, logger *zap.SugaredLogger, infoLabels, targetLabels prometheus.Labels) {
 	shellyProber := shellyprober.ShellyProberGen1{
 		Target: target,
-		Client: sp.client,
+		Client: sp.client.Clone(),
 		Ctx:    sp.ctx,
 		Cache:  globalCache,
 	}

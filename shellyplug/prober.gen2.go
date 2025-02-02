@@ -24,7 +24,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 
 	shellyProber := shellyprober.ShellyProberGen2{
 		Target: target,
-		Client: sp.client,
+		Client: sp.client.Clone(),
 		Ctx:    sp.ctx,
 		Cache:  globalCache,
 	}

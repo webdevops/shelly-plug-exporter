@@ -16,6 +16,10 @@ import (
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
 
+var (
+	restyClient *resty.Client
+)
+
 type (
 	ShellyPlug struct {
 		ctx      context.Context
@@ -48,19 +52,23 @@ func New(ctx context.Context, registry *prometheus.Registry, logger *zap.Sugared
 }
 
 func (sp *ShellyPlug) initResty() {
-	sp.client = resty.New()
+	if restyClient == nil {
+		restyClient = resty.New()
 
-	sp.client.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
-		switch statusCode := response.StatusCode(); statusCode {
-		case 401:
-			return errors.New(`shelly plug requires authentication and/or credentials are invalid`)
-		case 200:
-			// all ok, proceed
-			return nil
-		default:
-			return fmt.Errorf(`expected http status 200, got %v`, response.StatusCode())
-		}
-	})
+		restyClient.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
+			switch statusCode := response.StatusCode(); statusCode {
+			case 401:
+				return errors.New(`shelly plug requires authentication and/or credentials are invalid`)
+			case 200:
+				// all ok, proceed
+				return nil
+			default:
+				return fmt.Errorf(`expected http status 200, got %v`, response.StatusCode())
+			}
+		})
+	}
+
+	sp.client = restyClient
 }
 
 func (sp *ShellyPlug) SetUserAgent(val string) {

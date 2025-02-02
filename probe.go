@@ -18,7 +18,7 @@ const (
 	DefaultTimeout = 30
 )
 
-func newShellyuProber(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *shellyplug.ShellyPlug {
+func newShellyProber(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *shellyplug.ShellyPlug {
 	sp := shellyplug.New(ctx, registry, logger)
 	sp.SetUserAgent(UserAgent + gitTag)
 	sp.SetTimeout(Opts.Shelly.Request.Timeout)
@@ -49,7 +49,7 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 
-	sp := newShellyuProber(ctx, registry, contextLogger)
+	sp := newShellyProber(ctx, registry, contextLogger)
 	sp.UseDiscovery()
 	sp.Run()
 

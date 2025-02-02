@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/hashicorp/mdns"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapio"
 )
 
 const (
@@ -135,6 +137,8 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 	params.DisableIPv6 = true
 	params.Timeout = timeout
 	params.Entries = entriesCh
+	stdOutWriter := &zapio.Writer{Log: d.logger.Desugar(), Level: zap.InfoLevel}
+	params.Logger = log.New(stdOutWriter, "", 0)
 	err := mdns.Query(params)
 	if err != nil {
 		panic(err)

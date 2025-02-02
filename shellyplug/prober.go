@@ -27,6 +27,11 @@ type (
 		logger   *zap.SugaredLogger
 		registry *prometheus.Registry
 
+		auth struct {
+			username string
+			password string
+		}
+
 		targets struct {
 			list []discovery.DiscoveryTarget
 			lock sync.RWMutex
@@ -80,9 +85,20 @@ func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
 }
 
 func (sp *ShellyPlug) SetHttpAuth(username, password string) {
-	sp.client.SetDisableWarn(true)
-	sp.client.SetBasicAuth(username, password)
-	sp.client.SetDigestAuth(username, password)
+	sp.auth.username = username
+	sp.auth.password = password
+}
+
+func (sp *ShellyPlug) cloneRestyClient() *resty.Client {
+	client := sp.client.Clone()
+
+	if sp.auth.username != "" {
+		client.SetDisableWarn(true)
+		client.SetBasicAuth(sp.auth.username, sp.auth.password)
+		client.SetDigestAuth(sp.auth.username, sp.auth.password)
+	}
+
+	return client
 }
 
 func (sp *ShellyPlug) SetTargets(targets []discovery.DiscoveryTarget) {

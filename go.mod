@@ -3,13 +3,13 @@ module github.com/webdevops/shelly-plug-exporter
 go 1.23
 
 require (
-	github.com/KimMachineGun/automemlimit v0.7.0
+	github.com/KimMachineGun/automemlimit v0.7.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/hashicorp/mdns v1.0.6
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.20.5
+	github.com/prometheus/client_golang v1.21.1
 	go.uber.org/zap v1.27.0
 	go.uber.org/zap/exp v0.3.0
 )

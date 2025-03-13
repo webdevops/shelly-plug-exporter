@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -27,6 +28,35 @@ func newShellyProber(ctx context.Context, registry *prometheus.Registry, logger 
 	}
 
 	return sp
+}
+
+func shellyProbeDiscoveryTargets(w http.ResponseWriter, r *http.Request) {
+	registry := prometheus.NewRegistry()
+
+	contextLogger := buildContextLoggerFromRequest(r)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30*float64(time.Second)))
+	defer cancel()
+
+	sp := newShellyProber(ctx, registry, contextLogger)
+	sp.UseDiscovery()
+
+	targets := sp.GetTargets()
+
+	body, err := json.Marshal(targets)
+	if err != nil {
+		contextLogger.Error(err)
+		http.Error(w, fmt.Sprintf("unable to marshal targets to json: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(body)
+	if err != nil {
+		contextLogger.Error(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 }
 
 func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {

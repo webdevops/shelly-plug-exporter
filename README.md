@@ -80,10 +80,11 @@ scrape_configs:
 HTTP Endpoints
 --------------
 
-| Endpoint   | Description                                                                                                              |
-|------------|--------------------------------------------------------------------------------------------------------------------------|
-| `/metrics` | Default prometheus golang metrics                                                                                        |
-| `/probe`   | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs (must be run on host network)                        |
+| Endpoint   | Description                                                                                       |
+|------------|---------------------------------------------------------------------------------------------------|
+| `/metrics` | Default prometheus golang metrics                                                                 |
+| `/probe`   | Probe shelly plugs, uses mDNS servicediscovery to find Shelly plugs (must be run on host network) |
+| `/targets` | List of configured and discovered targets as JSON                                                 |
 
 Metrics
 -------

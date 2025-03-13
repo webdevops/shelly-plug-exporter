@@ -88,6 +88,7 @@ func startHttpServer() {
 
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/probe", shellyProbeDiscovery)
+	mux.HandleFunc("/targets", shellyProbeDiscoveryTargets)
 
 	srv := &http.Server{
 		Addr:         Opts.Server.Bind,

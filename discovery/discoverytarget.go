@@ -7,12 +7,13 @@ import (
 
 type (
 	DiscoveryTarget struct {
-		Hostname string
-		Address  string
-		Port     int
-		Health   int
-		Type     string
-		Static   bool
+		DeviceName *string `json:"deviceName"`
+		Hostname   string  `json:"hostname"`
+		Address    string  `json:"address"`
+		Port       int     `json:"port"`
+		Health     int     `json:"health"`
+		Type       string  `json:"type"`
+		Static     bool    `json:"isStatic"`
 	}
 )
 

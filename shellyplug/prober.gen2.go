@@ -33,6 +33,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 		// target is healthy
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetHealthy)
+			discovery.ServiceDiscovery.SetTargetDeviceName(target.Address, infoLabels["plugName"])
 		}
 
 		// systemStatus

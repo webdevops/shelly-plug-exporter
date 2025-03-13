@@ -21,6 +21,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 	if result, err := shellyProber.GetSettings(); err == nil {
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetHealthy)
+			discovery.ServiceDiscovery.SetTargetDeviceName(target.Address, result.Name)
 		}
 
 		targetLabels["plugName"] = result.Name

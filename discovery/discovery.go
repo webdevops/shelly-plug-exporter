@@ -181,6 +181,15 @@ func (d *serviceDiscovery) MarkTarget(address string, healthy bool) {
 	d.cleanup()
 }
 
+func (d *serviceDiscovery) SetTargetDeviceName(address, deviceName string) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+
+	if _, exists := d.targetList[address]; exists {
+		d.targetList[address].DeviceName = &deviceName
+	}
+}
+
 func (d *serviceDiscovery) cleanup() {
 	for address, target := range d.targetList {
 		if target.Health <= TargetHealthDead {

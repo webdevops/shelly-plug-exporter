@@ -14,7 +14,7 @@ import (
 
 const (
 	TargetHealthDead = 0
-	TargetHealthLow  = 1
+	TargetHealthLow  = 2
 	TargetHealthGood = 10
 
 	TargetHealthy   = true
@@ -118,9 +118,19 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		d.lock.Lock()
 		defer d.lock.Unlock()
 
-		// set all non-discovered targets to low health
+		// reduce all non-discovered targets health
 		for target := range d.targetList {
-			d.targetList[target].Health = TargetHealthLow
+			// set to low health if target was healthy before
+			// reduce health even further if not detected
+			// some devices seems not to respond to mdns discovery after some time,
+			// so try to keep them alive here
+			if d.targetList[target].Health > TargetHealthLow {
+				d.targetList[target].Health = TargetHealthLow
+			} else {
+				// reduce health even more for each failed service discovery
+				d.targetList[target].Health = d.targetList[target].Health - 1
+			}
+
 		}
 
 		// set all discovered targets to good health

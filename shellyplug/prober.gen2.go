@@ -30,6 +30,11 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 	}
 
 	if shellyConfig, err := shellyProber.GetShellyConfig(); err == nil {
+		// target is healthy
+		if discovery.ServiceDiscovery != nil {
+			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetHealthy)
+		}
+
 		// systemStatus
 		if result, err := shellyProber.GetSysStatus(); err == nil {
 			sp.prometheus.sysUnixtime.With(targetLabels).Set(float64(result.Unixtime))

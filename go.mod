@@ -12,7 +12,6 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	go.uber.org/zap v1.27.0
 	go.uber.org/zap/exp v0.3.0
-	resty.dev/v3 v3.0.0-beta.2
 )
 
 require (

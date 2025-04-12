@@ -22,9 +22,11 @@ type (
 func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *zap.SugaredLogger, infoLabels, targetLabels prometheus.Labels) {
 	sp.prometheus.info.With(infoLabels).Set(1)
 
+	client := sp.restyClient(sp.ctx, target)
+
 	shellyProber := shellyprober.ShellyProberGen2{
 		Target: target,
-		Client: sp.cloneRestyClient(),
+		Client: client,
 		Ctx:    sp.ctx,
 		Cache:  globalCache,
 	}

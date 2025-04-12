@@ -22,7 +22,9 @@ type (
 func (sp *ShellyPlug) targetGetShellyInfo(target discovery.DiscoveryTarget) (ResultShellyInfo, error) {
 	result := ResultShellyInfo{}
 
-	r := sp.client.R().SetContext(sp.ctx).SetResult(&result).ForceContentType("application/json")
-	_, err := r.Get(target.Url("/shelly"))
+	client := sp.restyClient(sp.ctx, target)
+
+	r := client.R().ForceContentType("application/json").SetResult(&result)
+	_, err := r.Get("/shelly")
 	return result, err
 }

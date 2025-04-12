@@ -2,13 +2,10 @@ package shellyplug
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
-	resty "github.com/go-resty/resty/v2"
 	cache "github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
@@ -16,20 +13,20 @@ import (
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
 
-var (
-	restyClient *resty.Client
-)
-
 type (
 	ShellyPlug struct {
 		ctx      context.Context
-		client   *resty.Client
 		logger   *zap.SugaredLogger
 		registry *prometheus.Registry
 
 		auth struct {
 			username string
 			password string
+		}
+
+		resty struct {
+			timeout   time.Duration
+			userAgent string
 		}
 
 		targets struct {
@@ -46,59 +43,17 @@ func New(ctx context.Context, registry *prometheus.Registry, logger *zap.Sugared
 	sp.ctx = ctx
 	sp.registry = registry
 	sp.logger = logger
-	sp.initResty()
 	sp.initMetrics()
 
 	if globalCache == nil {
 		globalCache = cache.New(15*time.Minute, 1*time.Minute)
 	}
 
+	if restyCache == nil {
+		restyCache = cache.New(1*time.Hour, 1*time.Minute)
+	}
+
 	return &sp
-}
-
-func (sp *ShellyPlug) initResty() {
-	if restyClient == nil {
-		restyClient = resty.New()
-
-		restyClient.OnAfterResponse(func(client *resty.Client, response *resty.Response) error {
-			switch statusCode := response.StatusCode(); statusCode {
-			case 401:
-				return errors.New(`shelly plug requires authentication and/or credentials are invalid`)
-			case 200:
-				// all ok, proceed
-				return nil
-			default:
-				return fmt.Errorf(`expected http status 200, got %v`, response.StatusCode())
-			}
-		})
-	}
-
-	sp.client = restyClient
-}
-
-func (sp *ShellyPlug) SetUserAgent(val string) {
-	sp.client.SetHeader("User-Agent", val)
-}
-
-func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
-	sp.client.SetTimeout(timeout)
-}
-
-func (sp *ShellyPlug) SetHttpAuth(username, password string) {
-	sp.auth.username = username
-	sp.auth.password = password
-}
-
-func (sp *ShellyPlug) cloneRestyClient() *resty.Client {
-	client := sp.client.Clone()
-
-	if sp.auth.username != "" {
-		client.SetDisableWarn(true)
-		client.SetBasicAuth(sp.auth.username, sp.auth.password)
-		client.SetDigestAuth(sp.auth.username, sp.auth.password)
-	}
-
-	return client
 }
 
 func (sp *ShellyPlug) SetTargets(targets []discovery.DiscoveryTarget) {

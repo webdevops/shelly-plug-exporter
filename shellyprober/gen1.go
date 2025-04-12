@@ -3,8 +3,8 @@ package shellyprober
 import (
 	"context"
 
+	resty "github.com/go-resty/resty/v2"
 	"github.com/patrickmn/go-cache"
-	resty "resty.dev/v3"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -99,9 +99,9 @@ type (
 	}
 )
 
-func (sp *ShellyProberGen1) fetch(url string, target interface{}) error {
-	r := sp.Client.R().SetContext(sp.Ctx).SetResult(&target).ForceContentType("application/json")
-	_, err := r.Get(sp.Target.Url(url))
+func (sp *ShellyProberGen1) fetch(url string, response interface{}) error {
+	r := sp.Client.R().ForceContentType("application/json").SetResult(&response)
+	_, err := r.Get(url)
 	return err
 }
 

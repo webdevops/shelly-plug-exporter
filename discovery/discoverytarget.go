@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"fmt"
-	"strings"
 )
 
 type (
@@ -21,6 +20,10 @@ func (t *DiscoveryTarget) Name() string {
 	return fmt.Sprintf(`%v [%v]`, t.Hostname, t.Address)
 }
 
-func (t *DiscoveryTarget) Url(path string) string {
-	return fmt.Sprintf("http://%v:%v/%s", t.Address, t.Port, strings.TrimLeft(path, "/"))
+func (t *DiscoveryTarget) BaseUrl() string {
+	if t.Port == 80 {
+		return fmt.Sprintf("http://%v", t.Address)
+	} else {
+		return fmt.Sprintf("http://%v:%v", t.Address, t.Port)
+	}
 }

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/patrickmn/go-cache"
+	resty "resty.dev/v3"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )

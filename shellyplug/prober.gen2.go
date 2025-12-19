@@ -23,7 +23,11 @@ type (
 func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *slogger.Logger, infoLabels, targetLabels prometheus.Labels) {
 	sp.prometheus.info.With(infoLabels).Set(1)
 
-	client := sp.restyClient(sp.ctx, target)
+	client := sp.restyClient(sp.ctx, target, logger)
+	if sp.auth.username != "" {
+		client.SetDisableWarn(true)
+		client.SetDigestAuth(sp.auth.username, sp.auth.password)
+	}
 
 	shellyProber := shellyprober.ShellyProberGen2{
 		Target: target,

@@ -73,7 +73,8 @@ func (sp *ShellyPlug) GetTargets() []discovery.DiscoveryTarget {
 func (sp *ShellyPlug) Run() {
 	wg := sync.WaitGroup{}
 
-	for _, target := range sp.GetTargets() {
+	for _, row := range sp.GetTargets() {
+		target := row
 		wg.Add(1)
 		go func(target discovery.DiscoveryTarget) {
 			defer wg.Done()
@@ -136,6 +137,7 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 		}
 	}
 
+	targetLogger = targetLogger.With(slog.Int("gen", shellyGeneration))
 	switch shellyGeneration {
 	case 1:
 		sp.collectFromTargetGen1(target, targetLogger, infoLabels, targetLabels)

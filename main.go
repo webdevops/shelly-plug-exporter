@@ -27,13 +27,14 @@ var (
 	// Git version information
 	gitCommit = "<unknown>"
 	gitTag    = "<unknown>"
+	buildDate = "<unknown>"
 )
 
 func main() {
 	initArgparser()
 	initLogger()
 
-	logger.Info(fmt.Sprintf("starting shellyplug-plug-exporter v%s (%s; %s; by %v)", gitTag, gitCommit, runtime.Version(), Author))
+	logger.Info(fmt.Sprintf("starting shellyplug-plug-exporter v%s (%s; %s; by %v at %v)", gitTag, gitCommit, runtime.Version(), Author, buildDate))
 	logger.Info(string(Opts.GetJson()))
 	initSystem()
 

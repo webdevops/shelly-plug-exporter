@@ -13,6 +13,7 @@ type (
 		Health     int     `json:"health"`
 		Type       string  `json:"type"`
 		Static     bool    `json:"isStatic"`
+		Generation string  `json:"generation"`
 	}
 )
 

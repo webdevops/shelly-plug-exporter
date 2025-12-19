@@ -27,9 +27,9 @@ type (
 			}
 
 			Host struct {
-				ShellyPlug []string `long:"shelly.host.shellyplug"  env:"SHELLY_HOST_SHELLYPLUGS" env-delim:","  description:"shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPlug []string `long:"shelly.host.shellyplug"  env:"SHELLY_HOST_SHELLYPLUGS"  env-delim:","  description:"shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
 				ShellyPlus []string `long:"shelly.host.shellyplus"  env:"SHELLY_HOST_SHELLYPLUSES" env-delim:","  description:"shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
-				ShellyPro  []string `long:"shelly.host.shellypro"  env:"SHELLY_HOST_SHELLYPROS" env-delim:","  description:"shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
+				ShellyPro  []string `long:"shelly.host.shellypro"   env:"SHELLY_HOST_SHELLYPROS"   env-delim:","  description:"shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts" default:""`
 			}
 
 			ServiceDiscovery struct {

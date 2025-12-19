@@ -2,13 +2,13 @@ package shellyplug
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
-	resty "github.com/go-resty/resty/v2"
 	"github.com/patrickmn/go-cache"
+	"github.com/webdevops/go-common/log/slogger"
+	resty "resty.dev/v3"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -38,7 +38,7 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 		}
 	}
 
-	restyLogger := sp.logger.With(
+	restyLogger := sp.logger.WithGroup("request").With(
 		slog.String("target", target.Address),
 		slog.String("type", target.Type),
 	)
@@ -53,9 +53,10 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 	if sp.resty.userAgent != "" {
 		client.SetHeader("User-Agent", sp.resty.userAgent)
 	}
-	// client.SetRetryCount(2).
-	// 	SetRetryWaitTime(1 * time.Second).
-	// 	SetRetryMaxWaitTime(5 * time.Second)
+
+	client.SetRetryCount(2).
+		SetRetryWaitTime(1 * time.Second).
+		SetRetryMaxWaitTime(5 * time.Second)
 
 	if sp.auth.username != "" {
 		client.SetDisableWarn(true)
@@ -63,26 +64,30 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 		client.SetDigestAuth(sp.auth.username, sp.auth.password)
 	}
 
-	// client.AddRequestMiddleware(func(c *resty.Client, req *resty.Request) error {
-	// 	c.Logger().Debugf(`send request: %s %s`, req.Method, req.URL)
-	// 	return nil
-	// })
-	//
-	// client.AddResponseMiddleware(func(c *resty.Client, res *resty.Response) error {
-	// 	c.Logger().Debugf(`got response: %s %s with status %v`, res.Request.Method, res.Request.RawRequest.URL.String(), res.StatusCode())
-	// 	return nil
-	// })
+	client.AddRequestMiddleware(func(c *resty.Client, req *resty.Request) error {
+		c.Logger().(*slogger.Logger).With(
+			slog.String("method", req.Method),
+			slog.String("url", req.URL),
+		).Debugf(`send request`)
+		return nil
+	})
 
-	client.OnAfterResponse(func(c *resty.Client, res *resty.Response) error {
+	client.AddResponseMiddleware(func(c *resty.Client, res *resty.Response) error {
+		logger := c.Logger().(*slogger.Logger).With(
+			slog.String("method", res.Request.Method),
+			slog.String("url", res.Request.RawRequest.URL.String()),
+			slog.Int("status", res.StatusCode()),
+		)
+
 		switch res.StatusCode() {
-		case 401:
-			return errors.New(`shelly plug requires authentication and/or credentials are invalid`)
 		case 200:
-			// all ok, proceed
-			return nil
+			logger.Debugf(`request successfull`)
 		default:
-			return fmt.Errorf(`expected http status 200, got %v`, res.StatusCode())
+			logger.Debugf(`request failed`)
+			return fmt.Errorf(`request failed with status code %d`, res.StatusCode())
 		}
+
+		return nil
 	})
 
 	restyCache.SetDefault(cacheKey, client)

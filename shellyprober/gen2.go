@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	resty "github.com/go-resty/resty/v2"
 	"github.com/patrickmn/go-cache"
+	resty "resty.dev/v3"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -114,13 +114,13 @@ type (
 )
 
 func (sp *ShellyProberGen2) fetch(url string, response interface{}) error {
-	r := sp.Client.R().ForceContentType("application/json").SetResult(&response)
+	r := sp.Client.R().SetForceResponseContentType("application/json").SetResult(&response)
 	_, err := r.Get(url)
 	return err
 }
 
 func (sp *ShellyProberGen2) fetchWithCache(url string, response interface{}) error {
-	cacheKey := fmt.Sprintf("%s/%s", sp.Client.BaseURL, url)
+	cacheKey := fmt.Sprintf("%s/%s", sp.Client.BaseURL(), url)
 
 	if val, ok := sp.Cache.Get(cacheKey); ok {
 		if data, err := json.Marshal(val); err == nil {

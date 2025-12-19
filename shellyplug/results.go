@@ -24,7 +24,7 @@ func (sp *ShellyPlug) targetGetShellyInfo(target discovery.DiscoveryTarget) (Res
 
 	client := sp.restyClient(sp.ctx, target)
 
-	r := client.R().ForceContentType("application/json").SetResult(&result)
+	r := client.R().SetForceResponseContentType("application/json").SetResult(&result)
 	_, err := r.Get("/shelly")
 	return result, err
 }

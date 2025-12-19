@@ -1,15 +1,14 @@
 package discovery
 
 import (
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/hashicorp/mdns"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapio"
+	"github.com/webdevops/go-common/log/slogger"
 )
 
 const (
@@ -27,7 +26,7 @@ const (
 
 type (
 	serviceDiscovery struct {
-		logger      *zap.SugaredLogger
+		logger      *slogger.Logger
 		targetList  map[string]*DiscoveryTarget
 		lock        sync.RWMutex
 		staticHosts []DiscoveryTarget
@@ -38,7 +37,7 @@ var (
 	ServiceDiscovery *serviceDiscovery
 )
 
-func EnableDiscovery(logger *zap.SugaredLogger, refreshTime time.Duration, timeout time.Duration, shellyplugs []string, shellyplus []string, shellypro []string) {
+func EnableDiscovery(logger *slogger.Logger, refreshTime time.Duration, timeout time.Duration, shellyplugs []string, shellyplus []string, shellypro []string) {
 	ServiceDiscovery = &serviceDiscovery{}
 	ServiceDiscovery.logger = logger
 	ServiceDiscovery.init(shellyplugs, shellyplus, shellypro)
@@ -85,7 +84,13 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		for entry := range entriesCh {
 			switch {
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplug-"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
+				d.logger.With(
+					slog.Group(
+						"target",
+						slog.String("name", entry.Name),
+						slog.String("address", entry.AddrV4.String()),
+					),
+				).Debug(`found target via mDNS servicediscovery`)
 				targetList = append(targetList, DiscoveryTarget{
 					Hostname: entry.Name,
 					Port:     entry.Port,
@@ -94,7 +99,13 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Static:   false,
 				})
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellyplus"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
+				d.logger.With(
+					slog.Group(
+						"target",
+						slog.String("name", entry.Name),
+						slog.String("address", entry.AddrV4.String()),
+					),
+				).Debug(`found target via mDNS servicediscovery`)
 				targetList = append(targetList, DiscoveryTarget{
 					Hostname: entry.Name,
 					Port:     entry.Port,
@@ -103,7 +114,13 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Static:   false,
 				})
 			case strings.HasPrefix(strings.ToLower(entry.Name), "shellypro"):
-				d.logger.Debugf(`found %v [%v] via mDNS servicediscovery`, entry.Name, entry.AddrV4.String())
+				d.logger.With(
+					slog.Group(
+						"target",
+						slog.String("name", entry.Name),
+						slog.String("address", entry.AddrV4.String()),
+					),
+				).Debug(`found target via mDNS servicediscovery`)
 				targetList = append(targetList, DiscoveryTarget{
 					Hostname: entry.Name,
 					Port:     entry.Port,
@@ -113,7 +130,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 				})
 			}
 		}
-		d.logger.Debugf(`Total targets: "%v"`, targetList)
+		d.logger.Debug(`finished mDNS servicediscovery"`, slog.Int("targets", len(targetList)))
 
 		d.lock.Lock()
 		defer d.lock.Unlock()
@@ -130,7 +147,6 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 				// reduce health even more for each failed service discovery
 				d.targetList[target].Health = d.targetList[target].Health - 1
 			}
-
 		}
 
 		// set all discovered targets to good health
@@ -147,8 +163,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 	params.DisableIPv6 = true
 	params.Timeout = timeout
 	params.Entries = entriesCh
-	stdOutWriter := &zapio.Writer{Log: d.logger.Desugar(), Level: zap.InfoLevel}
-	params.Logger = log.New(stdOutWriter, "", 0)
+	params.Logger = slog.NewLogLogger(d.logger.Handler(), slog.LevelInfo)
 	err := mdns.Query(params)
 	if err != nil {
 		panic(err)
@@ -193,7 +208,7 @@ func (d *serviceDiscovery) SetTargetDeviceName(address, deviceName string) {
 func (d *serviceDiscovery) cleanup() {
 	for address, target := range d.targetList {
 		if target.Health <= TargetHealthDead {
-			d.logger.Debugf(`disabling unhealthy target "%v"`, target.Name())
+			d.logger.Debug(`disabling unhealthy target"`, slog.String("target", target.Name()), slog.String("address", target.Address))
 			delete(d.targetList, address)
 		}
 	}

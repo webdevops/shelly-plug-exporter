@@ -2,13 +2,14 @@ package shellyplug
 
 import (
 	"context"
+	"log/slog"
 	"strconv"
 	"sync"
 	"time"
 
 	cache "github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
+	"github.com/webdevops/go-common/log/slogger"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -16,7 +17,7 @@ import (
 type (
 	ShellyPlug struct {
 		ctx      context.Context
-		logger   *zap.SugaredLogger
+		logger   *slogger.Logger
 		registry *prometheus.Registry
 
 		auth struct {
@@ -38,7 +39,7 @@ type (
 	}
 )
 
-func New(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *ShellyPlug {
+func New(ctx context.Context, registry *prometheus.Registry, logger *slogger.Logger) *ShellyPlug {
 	sp := ShellyPlug{}
 	sp.ctx = ctx
 	sp.registry = registry
@@ -83,9 +84,15 @@ func (sp *ShellyPlug) Run() {
 }
 
 func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
-	targetLogger := sp.logger.With(zap.String("target", target.Address))
+	targetLogger := sp.logger.With(
+		slog.Group(
+			"target",
+			slog.String("name", target.Name()),
+			slog.String("address", target.Address),
+		),
+	)
 
-	targetLogger.Debugf("probing shelly %v", target.Name())
+	targetLogger.Debug("probing shelly device")
 
 	targetLabels := prometheus.Labels{
 		"target":   target.Address,
@@ -106,7 +113,7 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	shellyGeneration := 0
 	if result, err := sp.targetGetShellyInfo(target); err == nil {
 		if result.Gen != nil {
-			targetLogger.Debugf(`detected shelly device generation %v`, *result.Gen)
+			targetLogger.Debug(`detected shelly device generation`, slog.Int("gen", *result.Gen))
 			shellyGeneration = *result.Gen
 		} else {
 			shellyGeneration = 1
@@ -123,7 +130,7 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 		infoLabels["plugGeneration"] = strconv.Itoa(shellyGeneration)
 
 	} else {
-		targetLogger.Errorf(`failed to fetch settings: %v`, err)
+		targetLogger.Error(`failed to fetch settings`, slog.Any("error", err))
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
@@ -135,6 +142,6 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 	case 2:
 		sp.collectFromTargetGen2(target, targetLogger, infoLabels, targetLabels)
 	default:
-		targetLogger.Warnf("unsupported Shelly generation %v", shellyGeneration)
+		targetLogger.Warn("unsupported Shelly generation", slog.Int("gen", shellyGeneration))
 	}
 }

@@ -3,10 +3,11 @@ package shellyplug
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
+	"github.com/webdevops/go-common/log/slogger"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 	"github.com/webdevops/shelly-plug-exporter/shellyprober"
@@ -19,7 +20,7 @@ type (
 	}
 )
 
-func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *zap.SugaredLogger, infoLabels, targetLabels prometheus.Labels) {
+func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, logger *slogger.Logger, infoLabels, targetLabels prometheus.Labels) {
 	sp.prometheus.info.With(infoLabels).Set(1)
 
 	client := sp.restyClient(sp.ctx, target)
@@ -54,7 +55,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 				sp.prometheus.updateNeeded.With(targetLabels).Set(0)
 			}
 		} else {
-			logger.Errorf(`failed to decode sysConfig: %v`, err)
+			logger.Error(`failed to decode sysConfig`, slog.Any("error", err))
 		}
 
 		// wifiStatus
@@ -63,7 +64,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 			wifiLabels["ssid"] = result.Ssid
 			sp.prometheus.wifiRssi.With(wifiLabels).Set(float64(result.Rssi))
 		} else {
-			logger.Errorf(`failed to decode wifiStatus: %v`, err)
+			logger.Error(`failed to decode wifiStatus`, slog.Any("error", err))
 		}
 
 		for configName, configValue := range shellyConfig {
@@ -88,7 +89,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.Voltage)
 						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.Current)
 					} else {
-						logger.Errorf(`failed to decode switchStatus: %v`, err)
+						logger.Error(`failed to decode switchStatus`, slog.Any("error", err))
 					}
 				}
 			// em
@@ -131,7 +132,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						sp.prometheus.powerVoltage.With(powerUsageLabels).Set(result.CVoltage)
 						sp.prometheus.powerAmpere.With(powerUsageLabels).Set(result.CCurrent)
 					} else {
-						logger.Errorf(`failed to decode switchStatus: %v`, err)
+						logger.Error(`failed to decode switchStatus`, slog.Any("error", err))
 					}
 
 					if result, err := shellyProber.GetEmDataStatus(configData.Id); err == nil {
@@ -177,7 +178,7 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 						powerUsageLabels["direction"] = "out"
 						sp.prometheus.powerLoadTotal.With(powerUsageLabels).Set(result.CTotalActRetEnergy)
 					} else {
-						logger.Errorf(`failed to decode switchStatus: %v`, err)
+						logger.Error(`failed to decode switchStatus`, slog.Any("error", err))
 					}
 				}
 
@@ -191,13 +192,13 @@ func (sp *ShellyPlug) collectFromTargetGen2(target discovery.DiscoveryTarget, lo
 
 						sp.prometheus.temp.With(tempLabels).Set(result.TC)
 					} else {
-						logger.Errorf(`failed to decode temperatureStatus: %v`, err)
+						logger.Error(`failed to decode temperatureStatus`, slog.Any("error", err))
 					}
 				}
 			}
 		}
 	} else {
-		logger.Errorf(`failed to fetch status: %v`, err)
+		logger.Error(`failed to fetch status`, slog.Any("error", err))
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}

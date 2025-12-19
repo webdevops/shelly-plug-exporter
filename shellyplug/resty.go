@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
 	"github.com/patrickmn/go-cache"
-	"go.uber.org/zap"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 )
@@ -39,8 +39,8 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 	}
 
 	restyLogger := sp.logger.With(
-		zap.String("target", target.Address),
-		zap.String("type", target.Type),
+		slog.String("target", target.Address),
+		slog.String("type", target.Type),
 	)
 
 	client = resty.New()

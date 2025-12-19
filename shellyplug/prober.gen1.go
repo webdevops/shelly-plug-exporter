@@ -2,15 +2,16 @@ package shellyplug
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
+	"github.com/webdevops/go-common/log/slogger"
 
 	"github.com/webdevops/shelly-plug-exporter/discovery"
 	"github.com/webdevops/shelly-plug-exporter/shellyprober"
 )
 
-func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, logger *zap.SugaredLogger, infoLabels, targetLabels prometheus.Labels) {
+func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, logger *slogger.Logger, infoLabels, targetLabels prometheus.Labels) {
 	client := sp.restyClient(sp.ctx, target)
 
 	shellyProber := shellyprober.ShellyProberGen1{
@@ -36,7 +37,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 		powerLimitLabels["name"] = ""
 		sp.prometheus.powerLoadLimit.With(powerLimitLabels).Set(result.MaxPower)
 	} else {
-		logger.Errorf(`failed to fetch settings: %v`, err)
+		logger.Error(`failed to fetch settings`, slog.Any("error", err))
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}
@@ -90,7 +91,7 @@ func (sp *ShellyPlug) collectFromTargetGen1(target discovery.DiscoveryTarget, lo
 			sp.prometheus.switchTimer.With(switchLabels).Set(boolToFloat64(relay.HasTimer))
 		}
 	} else {
-		logger.Errorf(`failed to fetch status: %v`, err)
+		logger.Error(`failed to fetch status`, slog.Any("error", err))
 		if discovery.ServiceDiscovery != nil {
 			discovery.ServiceDiscovery.MarkTarget(target.Address, discovery.TargetUnhealthy)
 		}

@@ -3,13 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
 
 	"github.com/webdevops/shelly-plug-exporter/config"
 	"github.com/webdevops/shelly-plug-exporter/discovery"
@@ -33,11 +33,11 @@ func main() {
 	initArgparser()
 	initLogger()
 
-	logger.Infof("starting shellyplug-plug-exporter v%s (%s; %s; by %v)", gitTag, gitCommit, runtime.Version(), Author)
+	logger.Info(fmt.Sprintf("starting shellyplug-plug-exporter v%s (%s; %s; by %v)", gitTag, gitCommit, runtime.Version(), Author))
 	logger.Info(string(Opts.GetJson()))
 	initSystem()
 
-	logger.Infof("starting http server on %s", Opts.Server.Bind)
+	logger.Info("starting http server", slog.String("bind", Opts.Server.Bind))
 	startHttpServer()
 }
 
@@ -66,19 +66,19 @@ func startHttpServer() {
 	// healthz
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := fmt.Fprint(w, "Ok"); err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 		}
 	})
 
 	// readyz
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := fmt.Fprint(w, "Ok"); err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 		}
 	})
 
 	discovery.EnableDiscovery(
-		logger.With(zap.String("module", "discovery")),
+		logger.With(slog.String("module", "discovery")),
 		Opts.Shelly.ServiceDiscovery.Refresh,
 		Opts.Shelly.ServiceDiscovery.Timeout,
 		Opts.Shelly.Host.ShellyPlug,
@@ -96,5 +96,7 @@ func startHttpServer() {
 		ReadTimeout:  Opts.Server.ReadTimeout,
 		WriteTimeout: Opts.Server.WriteTimeout,
 	}
-	logger.Fatal(srv.ListenAndServe())
+	if err := srv.ListenAndServe(); err != nil {
+		logger.Fatal(err.Error())
+	}
 }

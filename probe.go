@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
+	"github.com/webdevops/go-common/log/slogger"
 
 	"github.com/webdevops/shelly-plug-exporter/shellyplug"
 )
@@ -19,7 +20,7 @@ const (
 	DefaultTimeout = 30
 )
 
-func newShellyProber(ctx context.Context, registry *prometheus.Registry, logger *zap.SugaredLogger) *shellyplug.ShellyPlug {
+func newShellyProber(ctx context.Context, registry *prometheus.Registry, logger *slogger.Logger) *shellyplug.ShellyPlug {
 	sp := shellyplug.New(ctx, registry, logger)
 	sp.SetUserAgent(UserAgent + gitTag)
 	sp.SetTimeout(Opts.Shelly.Request.Timeout)
@@ -45,7 +46,7 @@ func shellyProbeDiscoveryTargets(w http.ResponseWriter, r *http.Request) {
 
 	body, err := json.Marshal(targets)
 	if err != nil {
-		contextLogger.Error(err)
+		contextLogger.Error("failed to marshal object", slog.Any("error", err))
 		http.Error(w, fmt.Sprintf("unable to marshal targets to json: %s", err), http.StatusBadRequest)
 		return
 	}
@@ -53,7 +54,7 @@ func shellyProbeDiscoveryTargets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(body)
 	if err != nil {
-		contextLogger.Error(err)
+		contextLogger.Error("failed to write", slog.Any("error", err))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -70,7 +71,7 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	// If a timeout is configured via the Prometheus header, add it to the request.
 	timeoutSeconds, err = getPrometheusTimeout(r, DefaultTimeout)
 	if err != nil {
-		contextLogger.Error(err)
+		contextLogger.Error("failed to detect prometheus timeout", slog.Any("error", err))
 		http.Error(w, fmt.Sprintf("failed to parse timeout from Prometheus header: %s", err), http.StatusBadRequest)
 		return
 	}
@@ -87,8 +88,8 @@ func shellyProbeDiscovery(w http.ResponseWriter, r *http.Request) {
 	h.ServeHTTP(w, r)
 }
 
-func buildContextLoggerFromRequest(r *http.Request) *zap.SugaredLogger {
-	return logger.With(zap.String("requestPath", r.URL.Path))
+func buildContextLoggerFromRequest(r *http.Request) *slogger.Logger {
+	return logger.With(slog.Group("request", slog.String("path", r.URL.Path)))
 }
 
 func getPrometheusTimeout(r *http.Request, defaultTimeout float64) (timeout float64, err error) {

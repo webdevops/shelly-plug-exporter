@@ -16,20 +16,25 @@ Usage:
   shelly-plug-exporter [OPTIONS]
 
 Application Options:
-      --debug                            debug mode [$DEBUG]
-  -v, --verbose                          verbose mode [$VERBOSE]
-      --log.json                         Switch log output to json format [$LOG_JSON]
-      --shelly.request.timeout=          Request timeout (default: 5s) [$SHELLY_REQUEST_TIMEOUT]
-      --shelly.auth.username=            Username for shelly plug login [$SHELLY_AUTH_USERNAME]
-      --shelly.auth.password=            Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
-      --shelly.servicediscovery.timeout= mDNS discovery response timeout (default: 5s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
-      --shelly.servicediscovery.refresh= mDNS discovery refresh time (default: 15m) [$SHELLY_SERVICEDISCOVERY_REFRESH]
-      --server.bind=                     Server address (default: :8080) [$SERVER_BIND]
-      --server.timeout.read=             Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
-      --server.timeout.write=            Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
+      --log.level=[trace|debug|info|warning|error] Log level (default: info) [$LOG_LEVEL]
+      --log.format=[logfmt|json]                   Log format (default: logfmt) [$LOG_FORMAT]
+      --log.source=[|short|file|full]              Show source for every log message (useful for debugging and bug reports) [$LOG_SOURCE]
+      --log.color=[|auto|yes|no]                   Enable color for logs [$LOG_COLOR]
+      --log.time                                   Show log time [$LOG_TIME]
+      --shelly.request.timeout=                    Request timeout (default: 5s) [$SHELLY_REQUEST_TIMEOUT]
+      --shelly.auth.username=                      Username for shelly plug login [$SHELLY_AUTH_USERNAME]
+      --shelly.auth.password=                      Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
+      --shelly.host.shellyplug=                    shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPLUGS]
+      --shelly.host.shellyplus=                    shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPLUSES]
+      --shelly.host.shellypro=                     shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPROS]
+      --shelly.servicediscovery.timeout=           mDNS discovery response timeout (default: 15s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
+      --shelly.servicediscovery.refresh=           mDNS discovery refresh time (default: 15m) [$SHELLY_SERVICEDISCOVERY_REFRESH]
+      --server.bind=                               Server address (default: :8080) [$SERVER_BIND]
+      --server.timeout.read=                       Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
+      --server.timeout.write=                      Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
 
 Help Options:
-  -h, --help                             Show this help message
+  -h, --help                                       Show this help message
 ```
 
 Docker & Prometheus

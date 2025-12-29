@@ -11,7 +11,6 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.23.2
 	github.com/webdevops/go-common v0.0.0-20251219160827-5d6c8ef5b897
-	resty.dev/v3 v3.0.0-beta.5
 )
 
 require (

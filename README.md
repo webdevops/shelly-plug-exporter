@@ -21,12 +21,18 @@ Application Options:
       --log.source=[|short|file|full]              Show source for every log message (useful for debugging and bug reports) [$LOG_SOURCE]
       --log.color=[|auto|yes|no]                   Enable color for logs [$LOG_COLOR]
       --log.time                                   Show log time [$LOG_TIME]
-      --shelly.request.timeout=                    Request timeout (default: 5s) [$SHELLY_REQUEST_TIMEOUT]
+      --shelly.request.timeout=                    Request timeout (default: 2s) [$SHELLY_REQUEST_TIMEOUT]
+      --shelly.request.retry.count=                Retry count for failing requests (default: 3) [$SHELLY_REQUEST_RETRY_COUNT]
+      --shelly.request.retry.waittime=             Wait time after retry (default: 100ms) [$SHELLY_REQUEST_RETRY_WAITTIME]
+      --shelly.request.retry.waittimemax=          Maximum wait time after retry (default: 1s) [$SHELLY_REQUEST_RETRY_WAITTIMEMAX]
       --shelly.auth.username=                      Username for shelly plug login [$SHELLY_AUTH_USERNAME]
       --shelly.auth.password=                      Password for shelly plug login [$SHELLY_AUTH_PASSWORD]
-      --shelly.host.shellyplug=                    shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPLUGS]
-      --shelly.host.shellyplus=                    shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPLUSES]
-      --shelly.host.shellypro=                     shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts [$SHELLY_HOST_SHELLYPROS]
+      --shelly.host.shellyplug=                    shellyplug device IP or hostname to scrape. Pass multiple times for multiple hosts
+                                                   [$SHELLY_HOST_SHELLYPLUGS]
+      --shelly.host.shellyplus=                    shellyplus device IP or hostname to scrape. Pass multiple times for multiple hosts
+                                                   [$SHELLY_HOST_SHELLYPLUSES]
+      --shelly.host.shellypro=                     shellypro device IP or hostname to scrape. Pass multiple times for multiple hosts
+                                                   [$SHELLY_HOST_SHELLYPROS]
       --shelly.servicediscovery.timeout=           mDNS discovery response timeout (default: 15s) [$SHELLY_SERVICEDISCOVERY_TIMEOUT]
       --shelly.servicediscovery.refresh=           mDNS discovery refresh time (default: 15m) [$SHELLY_SERVICEDISCOVERY_REFRESH]
       --server.bind=                               Server address (default: :8080) [$SERVER_BIND]

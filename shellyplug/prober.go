@@ -26,7 +26,11 @@ type (
 		}
 
 		resty struct {
-			timeout   time.Duration
+			timeout          time.Duration
+			retryCount       int
+			retryWaitTime    time.Duration
+			retryWaitTimeMax time.Duration
+
 			userAgent string
 		}
 

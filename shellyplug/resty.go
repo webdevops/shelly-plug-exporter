@@ -26,6 +26,12 @@ func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
 	sp.resty.timeout = timeout
 }
 
+func (sp *ShellyPlug) EnableRetry(retries int, waitTime, waitTimeMax time.Duration) {
+	sp.resty.retryCount = retries
+	sp.resty.retryWaitTime = waitTime
+	sp.resty.retryWaitTimeMax = waitTimeMax
+}
+
 func (sp *ShellyPlug) SetHttpAuth(username, password string) {
 	sp.auth.username = username
 	sp.auth.password = password
@@ -56,9 +62,16 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 		client.SetHeader("User-Agent", sp.resty.userAgent)
 	}
 
-	client.SetRetryCount(2).
-		SetRetryWaitTime(1 * time.Second).
-		SetRetryMaxWaitTime(5 * time.Second)
+	if sp.resty.retryCount > 0 {
+		client.SetRetryCount(sp.resty.retryCount)
+
+		if sp.resty.retryWaitTime.Seconds() > 0 {
+			client.SetRetryWaitTime(sp.resty.retryWaitTime)
+		}
+		if sp.resty.retryWaitTimeMax.Seconds() > 0 {
+			client.SetRetryWaitTime(sp.resty.retryWaitTimeMax)
+		}
+	}
 
 	if sp.auth.username != "" {
 		client.SetDisableWarn(true)

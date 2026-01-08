@@ -24,6 +24,7 @@ func newShellyProber(ctx context.Context, registry *prometheus.Registry, logger 
 	sp := shellyplug.New(ctx, registry, logger)
 	sp.SetUserAgent(UserAgent + gitTag)
 	sp.SetTimeout(Opts.Shelly.Request.Timeout)
+	sp.EnableRetry(Opts.Shelly.Request.RetryCount, Opts.Shelly.Request.RetryWaitTime, Opts.Shelly.Request.RetryWaitTimeMax)
 	if len(Opts.Shelly.Auth.Username) >= 1 {
 		sp.SetHttpAuth(Opts.Shelly.Auth.Username, Opts.Shelly.Auth.Password)
 	}

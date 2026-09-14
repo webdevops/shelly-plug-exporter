@@ -147,6 +147,8 @@ func (sp *ShellyPlug) collectFromTarget(target discovery.DiscoveryTarget) {
 		sp.collectFromTargetGen1(target, targetLogger, infoLabels, targetLabels)
 	case 2:
 		sp.collectFromTargetGen2(target, targetLogger, infoLabels, targetLabels)
+	case 3:
+		sp.collectFromTargetGen2(target, targetLogger, infoLabels, targetLabels)
 	default:
 		targetLogger.Warn("unsupported Shelly generation", slog.Int("gen", shellyGeneration))
 	}

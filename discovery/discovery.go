@@ -21,7 +21,8 @@ const (
 
 	TargetTypeShellyPlug = "shellyplug"
 	TargetTypeShellyPlus = "shellyplus"
-	TargetTypeShellyPro  = "shellypro"
+	TargetTypeShellyGen2 = "shellygen2"
+	TargetTypeShellyGen3 = "shellygen3"
 )
 
 type (
@@ -78,7 +79,7 @@ func (d *serviceDiscovery) init(shellyplugs []string, shellyplus []string, shell
 	}
 	for _, entry := range shellypro {
 		if entry != "" {
-			staticHosts = append(staticHosts, discoveryTargetFromStatic(entry, TargetTypeShellyPro))
+			staticHosts = append(staticHosts, discoveryTargetFromStatic(entry, TargetTypeShellyGen2))
 		}
 	}
 	d.staticHosts = staticHosts
@@ -129,7 +130,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 				Hostname:   target.Name,
 				Port:       target.Port,
 				Address:    target.Address,
-				Type:       TargetTypeShellyPro,
+				Type:       TargetTypeShellyGen2,
 				Generation: target.Generation,
 				Static:     false,
 			}
@@ -142,7 +143,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Hostname:   target.Name,
 					Port:       target.Port,
 					Address:    target.Address,
-					Type:       TargetTypeShellyPro,
+					Type:       TargetTypeShellyGen2,
 					Generation: target.Generation,
 					Static:     false,
 				}
@@ -161,7 +162,16 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Hostname:   target.Name,
 					Port:       target.Port,
 					Address:    target.Address,
-					Type:       TargetTypeShellyPro,
+					Type:       TargetTypeShellyGen2,
+					Generation: target.Generation,
+					Static:     false,
+				}
+			case "3":
+				return &DiscoveryTarget{
+					Hostname:   target.Name,
+					Port:       target.Port,
+					Address:    target.Address,
+					Type:       TargetTypeShellyGen3,
 					Generation: target.Generation,
 					Static:     false,
 				}

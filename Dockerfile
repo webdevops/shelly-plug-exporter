@@ -1,7 +1,7 @@
 #############################################
 # Build
 #############################################
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
 
 RUN apk upgrade --no-cache --force
 RUN apk add --update build-base make git
@@ -31,7 +31,7 @@ RUN ["./shelly-plug-exporter", "--help"]
 # Final
 #############################################
 FROM gcr.io/distroless/static AS final-static
-ENV LOG_JSON=1
+ENV LOG_FORMAT=json
 WORKDIR /
 COPY --from=test /app .
 USER 1000:1000

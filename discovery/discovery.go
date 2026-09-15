@@ -91,7 +91,9 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 
 	wg := sync.WaitGroup{}
 
-	targetChannel := make(chan *DiscoveryTarget, 1)
+	d.logger.Info(`starting mDNS servicediscovery"`)
+
+	targetChannel := make(chan *DiscoveryTarget, 10)
 
 	wg.Add(1)
 	go func() {
@@ -101,9 +103,51 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		}
 	}()
 
+	// mDNS discovery via _shelly._tcp
+	d.discover("_shelly._tcp", timeout, func(logger *slogger.Logger, target *serviceDiscoveryTarget) *DiscoveryTarget {
+		if gen, ok := target.InfoFields["gen"]; ok {
+			switch strings.ToLower(gen) {
+			case "2":
+				logger.Debug(`found target via mDNS servicediscovery`)
+				return &DiscoveryTarget{
+					Hostname:   target.Name,
+					Port:       target.Port,
+					Address:    target.Address,
+					Type:       TargetTypeShellyGen2,
+					Generation: target.Generation,
+					Static:     false,
+				}
+			case "3":
+				logger.Debug(`found target via mDNS servicediscovery`)
+				return &DiscoveryTarget{
+					Hostname:   target.Name,
+					Port:       target.Port,
+					Address:    target.Address,
+					Type:       TargetTypeShellyGen3,
+					Generation: target.Generation,
+					Static:     false,
+				}
+			}
+		}
+
+		return nil
+	}, targetChannel)
+
+	time.Sleep(5 * time.Second)
+
 	// mDNS discovery via _http._tcp.
 	d.discover("_http._tcp", timeout, func(logger *slogger.Logger, target *serviceDiscoveryTarget) *DiscoveryTarget {
 		switch {
+		case strings.HasPrefix(target.Name, "shellyplug-"):
+			logger.Debug(`found target via mDNS servicediscovery`)
+			return &DiscoveryTarget{
+				Hostname:   target.Name,
+				Port:       target.Port,
+				Address:    target.Address,
+				Type:       TargetTypeShellyPlug,
+				Generation: target.Generation,
+				Static:     false,
+			}
 		case strings.HasPrefix(target.Name, "shellyplug-"):
 			logger.Debug(`found target via mDNS servicediscovery`)
 			return &DiscoveryTarget{
@@ -147,31 +191,12 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 					Generation: target.Generation,
 					Static:     false,
 				}
-			}
-		}
-
-		return nil
-	}, targetChannel)
-
-	// mDNS discovery via _shelly._tcp
-	d.discover("_shelly._tcp", timeout, func(logger *slogger.Logger, target *serviceDiscoveryTarget) *DiscoveryTarget {
-		if gen, ok := target.InfoFields["gen"]; ok {
-			switch strings.ToLower(gen) {
-			case "2":
-				return &DiscoveryTarget{
-					Hostname:   target.Name,
-					Port:       target.Port,
-					Address:    target.Address,
-					Type:       TargetTypeShellyGen2,
-					Generation: target.Generation,
-					Static:     false,
-				}
 			case "3":
 				return &DiscoveryTarget{
 					Hostname:   target.Name,
 					Port:       target.Port,
 					Address:    target.Address,
-					Type:       TargetTypeShellyGen3,
+					Type:       TargetTypeShellyGen2,
 					Generation: target.Generation,
 					Static:     false,
 				}
@@ -208,7 +233,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		d.targetList[target.Address].Health = TargetHealthGood
 	}
 
-	d.logger.Debug(`finished mDNS servicediscovery"`, slog.Int("targets", len(d.targetList)))
+	d.logger.Info(`finished mDNS servicediscovery"`, slog.Int("targets", len(d.targetList)))
 
 	d.cleanup()
 }
@@ -229,7 +254,7 @@ func (d *serviceDiscovery) discover(service string, timeout time.Duration, callb
 				Name:         strings.ToLower(entry.Name),
 				Host:         strings.ToLower(entry.Host),
 				Port:         entry.Port,
-				Address:      entry.AddrV4.String(),
+				Address:      entry.Addr.String(),
 				InfoFields:   map[string]string{},
 				Generation:   "",
 				Version:      "",
@@ -261,8 +286,10 @@ func (d *serviceDiscovery) discover(service string, timeout time.Duration, callb
 					"target",
 					slog.String("name", target.Name),
 					slog.String("address", target.Address),
+					slog.String("gen", target.Generation),
 				),
 			)
+
 			if target := callback(entryLogger, &target); target != nil {
 				channel <- target
 			}

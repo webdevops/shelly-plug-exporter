@@ -254,7 +254,7 @@ func (d *serviceDiscovery) discover(service string, timeout time.Duration, callb
 				Name:         strings.ToLower(entry.Name),
 				Host:         strings.ToLower(entry.Host),
 				Port:         entry.Port,
-				Address:      entry.Addr.String(),
+				Address:      entry.AddrV4.String(),
 				InfoFields:   map[string]string{},
 				Generation:   "",
 				Version:      "",

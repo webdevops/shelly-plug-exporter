@@ -91,7 +91,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 
 	wg := sync.WaitGroup{}
 
-	d.logger.Info(`starting mDNS servicediscovery"`)
+	d.logger.Info(`starting mDNS servicediscovery`)
 
 	targetChannel := make(chan *DiscoveryTarget, 10)
 
@@ -233,7 +233,7 @@ func (d *serviceDiscovery) Run(timeout time.Duration) {
 		d.targetList[target.Address].Health = TargetHealthGood
 	}
 
-	d.logger.Info(`finished mDNS servicediscovery"`, slog.Int("targets", len(d.targetList)))
+	d.logger.Info(`finished mDNS servicediscovery`, slog.Int("targets", len(d.targetList)))
 
 	d.cleanup()
 }
@@ -346,7 +346,7 @@ func (d *serviceDiscovery) SetTargetDeviceName(address, deviceName string) {
 func (d *serviceDiscovery) cleanup() {
 	for address, target := range d.targetList {
 		if target.Health <= TargetHealthDead {
-			d.logger.Debug(`disabling unhealthy target"`, slog.String("target", target.Name()), slog.String("address", target.Address))
+			d.logger.Debug(`disabling unhealthy target`, slog.String("target", target.Name()), slog.String("address", target.Address))
 			delete(d.targetList, address)
 		}
 	}

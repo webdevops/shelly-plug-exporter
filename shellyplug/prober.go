@@ -26,6 +26,7 @@ type (
 		}
 
 		resty struct {
+			delay            time.Duration
 			timeout          time.Duration
 			retryCount       int
 			retryWaitTime    time.Duration

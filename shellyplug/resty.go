@@ -22,11 +22,15 @@ func (sp *ShellyPlug) SetUserAgent(val string) {
 	sp.resty.userAgent = val
 }
 
-func (sp *ShellyPlug) SetTimeout(timeout time.Duration) {
+func (sp *ShellyPlug) SetRequestDelay(delay time.Duration) {
+	sp.resty.delay = delay
+}
+
+func (sp *ShellyPlug) SetRequestTimeout(timeout time.Duration) {
 	sp.resty.timeout = timeout
 }
 
-func (sp *ShellyPlug) EnableRetry(retries int, waitTime, waitTimeMax time.Duration) {
+func (sp *ShellyPlug) EnableRequestRetry(retries int, waitTime, waitTimeMax time.Duration) {
 	sp.resty.retryCount = retries
 	sp.resty.retryWaitTime = waitTime
 	sp.resty.retryWaitTimeMax = waitTimeMax
@@ -106,6 +110,10 @@ func (sp *ShellyPlug) restyClient(ctx context.Context, target discovery.Discover
 	// })
 
 	client.OnAfterResponse(func(c *resty.Client, res *resty.Response) error {
+		if sp.resty.delay.Milliseconds() > 0 {
+			time.Sleep(sp.resty.delay)
+		}
+
 		switch res.StatusCode() {
 		case 401:
 			return errors.New(`shelly plug requires authentication and/or credentials are invalid`)

@@ -18,6 +18,7 @@ type (
 
 		Shelly struct {
 			Request struct {
+				Delay            time.Duration `long:"shelly.request.delay"              env:"SHELLY_REQUEST_DELAY"              description:"Request delay" default:"100ms"`
 				Timeout          time.Duration `long:"shelly.request.timeout"            env:"SHELLY_REQUEST_TIMEOUT"            description:"Request timeout" default:"2s"`
 				RetryCount       int           `long:"shelly.request.retry.count"        env:"SHELLY_REQUEST_RETRY_COUNT"        description:"Retry count for failing requests" default:"3"`
 				RetryWaitTime    time.Duration `long:"shelly.request.retry.waittime"     env:"SHELLY_REQUEST_RETRY_WAITTIME"     description:"Wait time after retry" default:"100ms"`

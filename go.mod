@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/mdns v1.0.7
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.24.1
+	github.com/prometheus/client_golang v1.25.0
 	github.com/webdevops/go-common v0.0.0-20260914212308-fafe6743167e
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
-	github.com/prometheus/common v0.71.0 // indirect
+	github.com/prometheus/common v0.72.0 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/net v0.59.0 // indirect
